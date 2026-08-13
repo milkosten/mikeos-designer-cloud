@@ -524,9 +524,13 @@ _EDIT_SYSTEM = (
 async def edit_page(current_html: str, instruction: str, style_name: str,
                     page_type_name: str = "", *, interactive: bool = False,
                     selector: Optional[str] = None, outer_html: Optional[str] = None,
-                    file_name: str = "index.html", on_token=None) -> str:
+                    file_name: str = "index.html", on_token=None,
+                    context: str = "") -> str:
     """FAST targeted edit — ONE streamed model call that rewrites this single page applying
-    the change minimally. No plan, no multi-page. Returns the sanitized+enforced HTML."""
+    the change minimally. No plan, no multi-page. Returns the sanitized+enforced HTML.
+
+    `context` is a short project-memory preamble (brand/tagline/tone/files + recent prior
+    instructions) so successive edits stay consistent with earlier decisions."""
     focus = ""
     if outer_html:
         focus = ("\n\nFocus your change on THIS element (leave the rest of the page "
@@ -536,7 +540,8 @@ async def edit_page(current_html: str, instruction: str, style_name: str,
     if interactive:
         focus += ("\n\nInline vanilla JavaScript is allowed on this page (no external src, no "
                   "network) — keep or add small interactivity as needed.")
-    user = (f"Current page (`{file_name}`):\n{current_html}\n\n"
+    preamble = (context.strip() + "\n\n") if context and context.strip() else ""
+    user = (f"{preamble}Current page (`{file_name}`):\n{current_html}\n\n"
             f"Change to apply: {instruction}{focus}\n\nReturn the full updated document only.")
     messages = [{"role": "system", "content": _EDIT_SYSTEM},
                 {"role": "user", "content": user}]

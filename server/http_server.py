@@ -100,6 +100,31 @@ class RevertBody(BaseModel):
     version_id: int
 
 
+class MessagesBody(BaseModel):
+    messages: List[Dict[str, Any]] = Field(default_factory=list)
+
+
+# Bounds for the persisted chat thread (protect the row + the model context).
+_MSG_MAX = 100          # keep only the most recent N messages
+_MSG_TEXT_MAX = 4000    # clamp each message's text
+
+
+def _sanitize_messages(messages: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """Keep only {role,text} per message, drop empties, cap length + count."""
+    out: List[Dict[str, Any]] = []
+    for m in (messages or []):
+        if not isinstance(m, dict):
+            continue
+        role = m.get("role")
+        role = role if role in ("user", "assistant") else "assistant"
+        text = m.get("text")
+        text = text if isinstance(text, str) else ("" if text is None else str(text))
+        if not text.strip():
+            continue
+        out.append({"role": role, "text": text[:_MSG_TEXT_MAX]})
+    return out[-_MSG_MAX:]
+
+
 # ---- serialization --------------------------------------------------------
 def _iso(dt) -> Optional[str]:
     return dt.isoformat() if dt is not None else None
@@ -120,6 +145,7 @@ def _project_full(row: asyncpg.Record) -> Dict[str, Any]:
         "interactive": bool(row["interactive"]) if "interactive" in row else False,
         "brief": _jsonb(row["brief"], {}) if "brief" in row else {},
         "pages": _jsonb(row["pages"], []),
+        "messages": _jsonb(row["messages"], []) if "messages" in row else [],
         "url": sites.public_url(row["id"]),
         "thumbnail": row["thumbnail"] if "thumbnail" in row else None,
         "visibility": row["visibility"],
@@ -383,6 +409,36 @@ async def create_project_stream(body: CreateBody, user_id: str = Depends(current
 
 
 # ---- fast targeted edit (Phase 2) -----------------------------------------
+def _edit_context(row: asyncpg.Record) -> str:
+    """A SHORT project-memory preamble for edits: brief (brand/tagline/tone + file list)
+    plus the last ~6 prior instructions from prompt_history. Kept to a few hundred tokens
+    — brief + recent instructions only, never the full history."""
+    brief = _jsonb(row["brief"], {}) if "brief" in row else {}
+    brand_obj = brief.get("brand") if isinstance(brief.get("brand"), dict) else {}
+    name = (brand_obj.get("name") if brand_obj else brief.get("brand")) or row["title"] or "this project"
+    tagline = (brand_obj.get("tagline") if brand_obj else brief.get("tagline")) or ""
+    tone = (brand_obj.get("tone") if brand_obj else brief.get("tone")) or ""
+    files = [p.get("file") for p in (brief.get("pages") or []) if isinstance(p, dict) and p.get("file")]
+    if not files:
+        files = [p.get("file") for p in _jsonb(row["pages"], []) if p.get("file")]
+    parts = [f"PROJECT CONTEXT — this page belongs to **{name}**"]
+    if tagline:
+        parts.append(f" ({tagline})")
+    parts.append(".")
+    if tone:
+        parts.append(f" Design tone: {tone}.")
+    if files:
+        parts.append(" Files: " + ", ".join(files[:8]) + ".")
+    history = _jsonb(row["prompt_history"], []) if "prompt_history" in row else []
+    recent = [h.get("instruction") for h in history[-6:]
+              if isinstance(h, dict) and (h.get("instruction") or "").strip()]
+    if recent:
+        numbered = "; ".join(f"{i + 1}) {ins[:160]}" for i, ins in enumerate(recent))
+        parts.append(" Recent changes already applied (most recent last): " + numbered + ".")
+    parts.append(" Keep these in mind and stay consistent.")
+    return "".join(parts)
+
+
 async def _apply_edit_and_save(row: asyncpg.Record, file: str, new_html: str,
                                instruction: str, progress=None) -> asyncpg.Record:
     site_id = row["id"]
@@ -423,6 +479,7 @@ async def edit_project(site_id: str, body: EditBody,
         current = pages[0].get("html", "") if pages else ""
         file = pages[0].get("file", "index.html") if pages else file
     interactive = bool(row["interactive"])
+    context = _edit_context(row)
 
     async def runner(put):
         put({"type": "progress", "stage": "Understanding your request", "detail": ""})
@@ -430,7 +487,7 @@ async def edit_project(site_id: str, body: EditBody,
         new_html = await harness.edit_page(
             current, body.instruction, row["style"], row["page_type"] or "",
             interactive=interactive, selector=body.selector, outer_html=body.outer_html,
-            file_name=file, on_token=on_token)
+            file_name=file, on_token=on_token, context=context)
         finish_pages()
         put({"type": "progress", "stage": "Publishing", "detail": ""})
         updated = await _apply_edit_and_save(row, file, new_html, body.instruction,
@@ -454,7 +511,8 @@ async def refine_project(site_id: str, body: PromptBody,
         current = pages[0].get("html", "")
     new_html = await harness.edit_page(
         current or "", body.instruction, row["style"], row["page_type"] or "",
-        interactive=bool(row["interactive"]), file_name=file)
+        interactive=bool(row["interactive"]), file_name=file,
+        context=_edit_context(row))
     updated = await _apply_edit_and_save(row, file, new_html, body.instruction)
     return _project_full(updated)
 
@@ -483,11 +541,15 @@ async def _regenerate(row: asyncpg.Record, brief: Dict[str, Any], style: str,
     sites.write_site(site_id, pages)
     pages = await _run_qa(site_id, pages, style,
                           new_brief.get("page_type") or row["page_type"] or "", progress)
+    # Keep the running instruction log complete: brief-edit/restyle also append to it.
+    history = _jsonb(row["prompt_history"], []) if "prompt_history" in row else []
+    history = history + [{"instruction": note, "file": None, "at": int(time.time())}]
     updated = await db.pool().fetchrow(
         "UPDATE projects SET pages = $1::jsonb, brief = $2::jsonb, style = $3, "
-        " page_type = $4, updated_at = now() WHERE id = $5 RETURNING *",
+        " page_type = $4, prompt_history = $5::jsonb, updated_at = now() "
+        " WHERE id = $6 RETURNING *",
         json.dumps(pages), json.dumps(new_brief), style,
-        new_brief.get("page_type") or row["page_type"], site_id)
+        new_brief.get("page_type") or row["page_type"], json.dumps(history), site_id)
     if not updated:
         put({"type": "error", "message": "update failed"})
         return
@@ -542,6 +604,21 @@ async def list_projects(user_id: str = Depends(current_user)):
 async def get_project(site_id: str, user_id: str = Depends(current_user)):
     row = await _load_owned(site_id, user_id)
     return _project_full(row)
+
+
+@app.put("/api/projects/{site_id}/messages")
+async def save_messages(site_id: str, body: MessagesBody,
+                        user_id: str = Depends(current_user_write)):
+    """Persist the chat thread for a project so a reload/reopen restores it.
+    Sanitized + bounded server-side (role+text only, last ~100, ~4000 chars each)."""
+    await _load_owned(site_id, user_id)
+    msgs = _sanitize_messages(body.messages)
+    updated = await db.pool().fetchrow(
+        "UPDATE projects SET messages = $1::jsonb WHERE id = $2 RETURNING id",
+        json.dumps(msgs), site_id)
+    if not updated:  # never-trust-200: verify the row actually updated
+        raise HTTPException(status_code=500, detail="save failed")
+    return {"ok": True}
 
 
 @app.get("/api/projects/{site_id}/files")
