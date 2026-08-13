@@ -171,19 +171,28 @@ async def _snapshot_version(site_id: str, pages: List[Dict[str, str]],
         logger.warning("version snapshot failed for %s: %s", site_id, e)
 
 
+# Hold strong refs to detached background tasks so they aren't garbage-collected
+# mid-flight (a fire-and-forget create_task with no reference can be GC'd before it runs).
+_bg_tasks: set = set()
+
+
 def _fire_thumbnail(site_id: str) -> None:
     """Best-effort, non-blocking: screenshot the live site and store a small data: URI.
-    Fires as a detached task so a slow chrome-pool never delays the response."""
+    Fires as a detached (but referenced) task so a slow chrome-pool never delays the response."""
     async def _run():
         try:
+            await asyncio.sleep(1.5)   # let Caddy serve the just-written files
             data_uri = await chrome.screenshot_data_uri(sites.public_url(site_id))
             if data_uri:
                 await db.pool().execute(
                     "UPDATE projects SET thumbnail = $1 WHERE id = $2", data_uri, site_id)
+                logger.info("thumbnail stored for %s (%d bytes)", site_id, len(data_uri))
         except Exception as e:  # noqa: BLE001
             logger.info("thumbnail update skipped for %s: %s", site_id, e)
     try:
-        asyncio.get_running_loop().create_task(_run())
+        t = asyncio.get_running_loop().create_task(_run())
+        _bg_tasks.add(t)
+        t.add_done_callback(_bg_tasks.discard)
     except RuntimeError:
         pass
 
