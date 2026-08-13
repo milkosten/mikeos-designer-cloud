@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>UptimeGuard - Reliable Uptime Monitoring</title>
+<style>
+    body {
+      font-family: var(--font);
+      margin: 0;
+      padding: 0;
+      background-color: var(--bg);
+      color: var(--ink);
+    }
+
+    header {
+      background-color: var(--accent);
+      color: var(--surface);
+      padding: 20px 0;
+      text-align: center;
+    }
+
+    header h1 {
+      margin: 0;
+    }
+
+    nav {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 10px;
+    }
+
+    nav a {
+      color: var(--surface);
+      text-decoration: none;
+    }
+
+    main {
+      padding: 20px;
+    }
+
+    .hero {
+      text-align: center;
+      padding: 40px 20px;
+      background-color: var(--accent);
+      color: var(--surface);
+    }
+
+    .hero h2 {
+      margin-bottom: 10px;
+    }
+
+    .hero p {
+      font-size: 1.2rem;
+    }
+
+    .cta button {
+      background-color: var(--surface);
+      color: var(--accent);
+      border: 2px solid var(--accent);
+      padding: 10px 20px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .cta button:hover {
+      background-color: var(--accent);
+      color: var(--surface);
+    }
+
+    .features {
+      display: flex;
+      justify-content: space-around;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin-top: 30px;
+    }
+
+    .features li {
+      background-color: var(--surface);
+      padding: 20px;
+      border-radius: var(--radius);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      flex: 1 1 250px;
+    }
+
+    .features svg {
+      width: 20px;
+      height: 20px;
+      margin-right: 10px;
+    }
+
+    .comparison-table {
+      margin-top: 40px;
+      text-align: center;
+    }
+
+    .comparison-table table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 20px auto;
+    }
+
+    .comparison-table th,
+    .comparison-table td {
+      border: 1px solid #ccc;
+      padding: 10px;
+    }
+
+    .comparison-table th {
+      background-color: var(--muted);
+    }
+
+    .comparison-table td {
+      background-color: var(--bg);
+    }
+
+    .comparison-table .price {
+      font-weight: bold;
+      color: var(--accent);
+    }
+
+    .comparison-table .cta {
+      text-align: center;
+    }
+
+    .comparison-table .cta button {
+      margin-top: 15px;
+    }
+
+    .faq {
+      margin-top: 40px;
+    }
+
+    .faq dt {
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    footer {
+      background-color: var(--accent);
+      color: var(--surface);
+      text-align: center;
+      padding: 20px 0;
+      margin-top: 40px;
+    }
+  
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible{outline:2px solid #4ea1ff;outline-offset:2px;}
+
+/* enforced style tokens */
+:root {
+  --bg: #f7f8fa;
+  --surface: #ffffff;
+  --ink: #0f1729;
+  --muted: #51607d;
+  --line: #e6eaf1;
+  --accent: #4f46e5;
+  --accent-2: #0ea5e9;
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --radius: 14px;
+  --step-0: 0.85rem;
+  --step-1: 1.05rem;
+  --step-2: 1.35rem;
+  --step-3: 1.9rem;
+  --step-4: 2.8rem;
+  --step-5: 4rem;
+  --s1: 4px;
+  --s2: 8px;
+  --s3: 16px;
+  --s4: 32px;
+  --s5: 64px;
+  --s6: 96px;
+}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);}
+
+/* enforced style tokens */
+:root {
+  --bg: #f7f8fa;
+  --surface: #ffffff;
+  --ink: #0f1729;
+  --muted: #51607d;
+  --line: #e6eaf1;
+  --accent: #4f46e5;
+  --accent-2: #0ea5e9;
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --radius: 14px;
+  --step-0: 0.85rem;
+  --step-1: 1.05rem;
+  --step-2: 1.35rem;
+  --step-3: 1.9rem;
+  --step-4: 2.8rem;
+  --step-5: 4rem;
+  --s1: 4px;
+  --s2: 8px;
+  --s3: 16px;
+  --s4: 32px;
+  --s5: 64px;
+  --s6: 96px;
+}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);}
+</style>
+</head>
+<body>
+<header>
+<h1>UptimeGuard</h1>
+<nav>
+<a href="#features">Features</a>
+<a href="#comparison_table">Plans</a>
+<a href="#faq">FAQ</a>
+</nav>
+</header>
+<main>
+<section class="hero">
+<h2>Enterprise-Grade Uptime Monitoring</h2>
+<p>Reliable uptime with support for large teams and complex systems.</p>
+<div class="cta">
+<button>Request Demo</button>
+</div>
+</section>
+<section class="features">
+<li>
+<svg fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewbox="0 0 24 20" width="20">
+<path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"></path>
+<path d="M12 2V12"></path>
+<path d="M12 12L12 22"></path>
+</svg>
+<strong>Real-time alerts</strong>
+</li>
+<li>
+<svg fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewbox="0 0 24 20" width="20">
+<path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"></path>
+<path d="M12 2V12"></path>
+<path d="M12 12L12 22"></path>
+</svg>
+<strong>Custom dashboards</strong>
+</li>
+<li>
+<svg fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewbox="0 0 24 20" width="20">
+<path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"></path>
+<path d="M12 2V12"></path>
+<path d="M12 12L12 22"></path>
+</svg>
+<strong>24/7 support</strong>
+</li>
+</section>
+<section class="comparison-table" id="comparison_table">
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Starter</th>
+<th>Pro</th>
+<th>Team</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Real-time alerts</td>
+<td><svg fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewbox="0 0 24 20" width="20"><path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"></path><path d="M12 2V12"></path><path d="M12 12L12 22"></path></svg></td>
+<td><svg fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewbox="0 0 24 20" width="20"><path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"></path><path d="M12 2V12"></path><path d="M12 12L12 22"></path></svg></td>
+<td><svg fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewbox="0 0 24 20" width="20"><path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"></path><path d="M12 2V12"></path><path d="M12 12L12 22"></path></svg></td>
+</tr>
+<tr>
+<td>Custom dashboards</td>
+<td><svg fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewbox="0 0 24 20" width="20"><path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"></path><path d="M12 2V12"></path><path d="M12 12L12 22"></path></svg></td>
+<td><svg fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewbox="0 0 24 20" width="20"><path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"></path><path d="M12 2V12"></path><path d="M12 12L12 22"></path></svg></td>
+<td><svg fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewbox="0 0 24 20" width="20"><path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"></path><path d="M12 2V12"></path><path d="M12 12L12 22"></path></svg></td>
+</tr>
+<tr>
+<td>Priority support</td>
+<td><svg fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewbox="0 0 24 20" width="20"><path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"></path><path d="M12 2V12"></path><path d="M12 12L12 22"></path></svg></td>
+<td><svg fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewbox="0 0 24 20" width="20"><path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"></path><path d="M12 2V12"></path><path d="M12 12L12 22"></path></svg></td>
+<td><svg fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewbox="0 0 24 20" width="20"><path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"></path><path d="M12 2V12"></path><path d="M12 12L12 22"></path></svg></td>
+</tr>
+<tr>
+<td>SLA guarantees</td>
+<td><svg fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewbox="0 0 24 20" width="20"><path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"></path><path d="M12 2V12"></path><path d="M12 12L12 22"></path></svg></td>
+<td><svg fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewbox="0 0 24 20" width="20"><path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"></path><path d="M12 2V12"></path><path d="M12 12L12 22"></path></svg></td>
+<td><svg fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewbox="0 0 24 20" width="20"><path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"></path><path d="M12 2V12"></path><path d="M12 12L12 22"></path></svg></td>
+</tr>
+<tr>
+<td>Price</td>
+<td class="price">$99/mo</td>
+<td class="price">$199/mo</td>
+<td class="price">$499/mo</td>
+</tr>
+<tr>
+<td>CTA</td>
+<td class="cta"><button>Get Started</button></td>
+<td class="cta"><button>Get Started</button></td>
+<td class="cta"><button>Get Started</button></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section class="faq">
+<h2>FAQ</h2>
+<details>
+<summary>What is uptime monitoring?</summary>
+<p>Uptime monitoring is the process of checking whether your website or application is accessible and functioning correctly. It helps identify and resolve issues before they affect your users.</p>
+</details>
+<details>
+<summary>How does your service work?</summary>
+<p>Our service continuously monitors your website or application from multiple locations around the world. If any issues are detected, we notify you immediately so you can take action.</p>
+</details>
+<details>
+<summary>Is there a free trial?</summary>
+<p>Yes, we offer a 14-day free trial to experience our service without any commitment. No credit card is required to sign up.</p>
+</details>
+</section>
+</main>
+<footer>
+<p>© 2023 UptimeGuard. All rights reserved.</p>
+</footer>
+</body>
+</html>

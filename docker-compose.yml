@@ -38,6 +38,10 @@ services:
     environment:
       DATABASE_URL: postgresql://mikeos:${DESIGNER_DB_PASSWORD:-mikeos_designer_local}@mikeos-designer-db:5432/mikeos_designer
       OLLAMA_GPU_URL: ${OLLAMA_GPU_URL:-ollama://mikeos:uB49VXwMDy7R2JE0H7mI@81.8.177.182:11443}
+      # OpenRouter (Kimi) — DESIGNER PROJECT ONLY. Key lives in .env on the host, never in git.
+      # When OPENROUTER_API_KEY is set, generation uses Kimi; otherwise it falls back to Ollama.
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+      DESIGNER_LLM_MODEL: ${DESIGNER_LLM_MODEL:-moonshotai/kimi-k3}
       ACCOUNT_OSMIKE_ISSUER: https://account.osmike.com
       # identity.py's baked default is fine, but pin it explicitly.
       MIKEOSCOMPUTERS_URL: https://account.osmike.com

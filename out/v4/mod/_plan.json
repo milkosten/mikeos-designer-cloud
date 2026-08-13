@@ -1,0 +1,46 @@
+{
+  "brand": {
+    "name": "UptimeGuard",
+    "tagline": "Keep your apps up, always.",
+    "tone": "Confident and friendly, with a focus on reliability and simplicity."
+  },
+  "pages": [
+    {
+      "file": "index.html",
+      "title": "UptimeGuard \u2014 Reliable Uptime Monitoring for Your Business",
+      "sections": [
+        {
+          "id": "hero",
+          "purpose": "Introduce the product and its core value proposition.",
+          "copy": "UptimeGuard keeps your apps running smoothly with real-time monitoring and alerts. No more downtime \u2014 just peace of mind."
+        },
+        {
+          "id": "title_block",
+          "purpose": "Highlight the pricing and toggle between monthly/annual plans.",
+          "copy": "Choose your plan and pay what you need."
+        },
+        {
+          "id": "plan_tiers",
+          "purpose": "Display the three pricing tiers with features and CTAs.",
+          "copy": "Starter: Basic monitoring for small teams. Pro: Advanced alerts and metrics. Team: Enterprise-grade uptime with support. Recommended: Pro"
+        },
+        {
+          "id": "comparison_table",
+          "purpose": "Compare features across the three pricing tiers.",
+          "copy": "Feature comparison table with check/dash icons for each plan."
+        },
+        {
+          "id": "faq",
+          "purpose": "Answer common billing questions.",
+          "copy": "How do billing cycles work? Can I upgrade at any time? What payment methods are supported?"
+        },
+        {
+          "id": "footer",
+          "purpose": "Provide contact and legal information.",
+          "copy": "Contact: hello@uptimeguard.com | Terms of Service | Privacy Policy"
+        }
+      ]
+    }
+  ],
+  "page_type": "Pricing"
+}

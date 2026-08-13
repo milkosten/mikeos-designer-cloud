@@ -1,0 +1,49 @@
+{
+  "brand": {
+    "name": "Pinglens",
+    "tagline": "Uptime monitoring that tells you before your customers do.",
+    "tone": "Calm, precise, trustworthy \u2014 an ops tool that respects your time. Plain-spoken, no hype."
+  },
+  "palette_hint": "Near-white ground (#f8fafc), white card surfaces, deep-slate ink (#0f172a headings / #475569 body), indigo accent (#4f46e5) reserved for the primary CTA and the recommended-tier border, sky-blue secondary (#0ea5e9) for small highlights like the toggle and check icons on the recommended plan. Hairline borders #e2e8f0.",
+  "type_hint": "System sans stack (-apple-system, 'Segoe UI', Roboto, Inter, sans-serif). Headings 600 weight with tight letter-spacing (-0.02em), body 400\u2013450 at 16\u201317px with 1.6 line-height, prices in 700 weight with tabular numerals, small caps/uppercase 12px labels for plan names and section eyebrows.",
+  "pages": [
+    {
+      "file": "index.html",
+      "title": "Pricing \u2014 Pinglens Uptime Monitoring",
+      "meta_description": "Simple, honest pricing for Pinglens uptime monitoring. Start free, scale to 500 monitors with status pages, SMS alerts, and 30-second checks. Plans from $0 to $49/month.",
+      "sections": [
+        {
+          "id": "header",
+          "purpose": "Clean top nav establishing the product and giving one escape route to sign up.",
+          "copy": "Wordmark: 'Pinglens' with a small inline SVG radar/pulse dot icon in indigo. Nav links: Features, Status Pages, Docs, Pricing (marked active with indigo text). Right side: 'Sign in' text link + 'Start free' button (indigo, small radius). Sticky with a hairline bottom border and subtle backdrop blur."
+        },
+        {
+          "id": "title-block",
+          "purpose": "Frame the pricing decision in one confident line and offer the billing-period toggle.",
+          "copy": "Eyebrow: 'PRICING'. H1: 'Monitoring that pays for itself the first time your site goes down.' Subline: 'Every plan includes unlimited team seats and alert history. Start free \u2014 upgrade when you need faster checks and more monitors.' Below: a styled monthly/annual segmented toggle (two pill buttons in a slate-100 track, 'Annual \u2014 save 20%' preselected with a small sky-blue 'Save 20%' chip). Note under toggle: 'Prices shown per month, billed annually.'"
+        },
+        {
+          "id": "plan-tiers",
+          "purpose": "Three concrete tiers in a grid; Pro is the recommended plan with a subtle indigo border and slight lift.",
+          "copy": "Tier 1 \u2014 Starter: $0/mo 'free forever'. Blurb: 'For side projects and personal sites that just need a nudge when they're down.' Features (check icons): 10 monitors, 5-minute check interval, Email alerts, 1 status page, 30-day alert history. CTA: 'Start free' (secondary/outline button). Tier 2 \u2014 Pro (RECOMMENDED): $19/mo billed annually ($24 monthly). Blurb: 'For growing products that need faster detection and richer alerts.' Features: 50 monitors, 1-minute checks, Email + Slack + webhook alerts, 3 status pages, SMS alerts (20/mo included), 12-month history, SSL & domain expiry alerts. CTA: 'Start 14-day trial' (primary indigo button). Tier 3 \u2014 Team: $49/mo billed annually ($59 monthly). Blurb: 'For teams running customer-facing services at scale.' Features: 500 monitors, 30-second checks, Unlimited SMS alerts, Unlimited status pages, Multi-region checks (3 locations), Escalation policies & on-call rotations, 24-month history, Priority support. CTA: 'Start 14-day trial' (secondary button). Recommended styling: 2px indigo border, soft layered shadow, small 'Most popular' eyebrow label above the plan name \u2014 no banner ribbon."
+        },
+        {
+          "id": "comparison-table",
+          "purpose": "Full feature \u00d7 plan matrix so buyers can verify differences; horizontally scrollable on small screens.",
+          "copy": "Table wrapped in overflow-x:auto, sticky first column. Column headers: Feature / Starter / Pro / Team. Row groups with subtle group labels: MONITORING \u2014 Monitors (10 / 50 / 500), Check interval (5 min / 1 min / 30 sec), Multi-region locations (1 / 2 / 3), SSL & domain expiry alerts (dash / check / check), Keyword & heartbeat monitoring (dash / check / check). ALERTS \u2014 Email (check all), Slack & webhooks (dash / check / check), SMS alerts (dash / 20 per mo / Unlimited), Escalation policies (dash / dash / check). REPORTING \u2014 Status pages (1 / 3 / Unlimited), Custom domain on status page (dash / check / check), Alert history (30 days / 12 months / 24 months), API access (dash / check / check). TEAM \u2014 Team seats (Unlimited all three), SSO/SAML (dash / dash / check), Priority support (dash / dash / check). Cells use small 16px line-icon checks (indigo for Pro column, slate for others) and simple en-dashes \u2014 centered, never text 'yes/no'."
+        },
+        {
+          "id": "faq",
+          "purpose": "Answer the four billing questions that actually block signups, using native details/summary.",
+          "copy": "Q1: 'What counts as a monitor?' \u2014 A: One URL, IP, or heartbeat endpoint you check. A single site with 3 pages checked separately counts as 3 monitors. Q2: 'Can I switch between monthly and annual billing?' \u2014 A: Yes, anytime from Settings \u2192 Billing. Switching to annual applies the 20% discount immediately with prorated credit for the remainder of your current month. Q3: 'What happens if I go over my SMS allowance on Pro?' \u2014 A: We never cut off alerts mid-incident. Extra SMS messages are billed at $0.10 each, and we'll email you when you hit 80% of the included allowance. Q4: 'Do you offer refunds?' \u2014 A: Annual plans can be cancelled within 30 days for a full refund. After that, cancellation stops renewal \u2014 no partial refunds, and your plan stays active until the period ends. Q5: 'Is the free plan really free?' \u2014 A: Yes \u2014 no credit card required, no trial clock. 10 monitors and email alerts forever."
+        },
+        {
+          "id": "footer",
+          "purpose": "Quiet close with a final reassurance line and standard product footer.",
+          "copy": "Top strip: 'Join 4,200+ teams monitoring with Pinglens.' + 'Start free' indigo button. Footer columns: Product (Features, Status Pages, Changelog, Roadmap), Resources (Docs, API Reference, System Status, Blog), Company (About, Contact, Security, Privacy). Bottom line: '\u00a9 2025 Pinglens, Inc. \u2014 SOC 2 Type II certified' with small inline SVG badges for SOC 2 and 99.99% uptime."
+        }
+      ]
+    }
+  ],
+  "page_type": "Pricing"
+}

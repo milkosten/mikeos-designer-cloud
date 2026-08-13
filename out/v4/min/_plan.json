@@ -1,0 +1,48 @@
+{
+  "brand": {
+    "name": "UptimeGuard",
+    "tagline": "Reliable uptime monitoring for your digital infrastructure.",
+    "tone": "Professional, calm, and confident"
+  },
+  "pages": [
+    {
+      "file": "index.html",
+      "title": "UptimeGuard - Reliable Uptime Monitoring",
+      "sections": [
+        {
+          "id": "hero",
+          "purpose": "Introduce the product and pricing options.",
+          "copy": "UptimeGuard ensures your services stay up and running with reliable uptime monitoring. Choose your plan and start protecting your digital infrastructure today."
+        },
+        {
+          "id": "title-block",
+          "purpose": "Headline and pricing toggle.",
+          "copy": "Pricing for UptimeGuard"
+        },
+        {
+          "id": "plan-tiers",
+          "purpose": "Display three pricing tiers with features and CTAs.",
+          "copy": "Starter: $15/mo \u2014 Basic uptime monitoring for small projects. Pro: $49/mo \u2014 Advanced features for growing teams. Team: $149/mo \u2014 Enterprise-grade monitoring for large-scale operations. Recommended: Pro"
+        },
+        {
+          "id": "comparison-table",
+          "purpose": "Compare features across pricing tiers.",
+          "copy": "Feature | Starter | Pro | Team\n---|---|---|---\nUptime Monitoring | \u2714 | \u2714 | \u2714\nCustom Alerts | \u2714 | \u2714 | \u2714\nTeam Collaboration | \u2714 | \u2714 | \u2714\nAdvanced Reporting | \u2714 | \u2714 | \u2714\n24/7 Support | \u2714 | \u2714 | \u2714\nCustom SLA | \u2714 | \u2714 | \u2714"
+        },
+        {
+          "id": "faq",
+          "purpose": "Answer common billing questions.",
+          "copy": "What payment methods do you accept? | Credit cards, PayPal, and bank transfer.\nCan I cancel anytime? | Yes, with a 30-day notice period.\nIs there a free trial? | Yes, 14 days of free access.\nWhat happens if I exceed my SLA? | You\u2019ll receive a 10% discount on the next month\u2019s billing.\nCan I upgrade my plan at any time? | Yes, and your new plan will apply immediately."
+        },
+        {
+          "id": "footer",
+          "purpose": "Contact and legal information.",
+          "copy": "\u00a9 2025 UptimeGuard. All rights reserved. Contact: support@uptimeguard.com | Privacy Policy | Terms of Service"
+        }
+      ]
+    }
+  ],
+  "palette_hint": "Near-white background (#fafaf9), dark ink (#1a1a19), muted gray (#6b6b66), and a single quiet accent (#3a5a40). Surfaces have a hairline border (#e7e7e3).",
+  "type_hint": "Modern system sans-serif. Big size jumps, light-to-regular weights, tight headings.",
+  "page_type": "Pricing"
+}

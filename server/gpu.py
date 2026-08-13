@@ -1,14 +1,15 @@
-"""GPU client for the shared free Ollama (qwen3:8b) at OLLAMA_GPU_URL.
+"""LLM client for the designer harness.
 
-Parses `ollama://user:pass@host:port` into base URL + HTTP-Basic header, POSTs to
-`https://<host>:<port>/api/chat` with the self-signed cert unverified, `think:false`
-(qwen3 returns empty otherwise), `stream:false`, and optional `format` (a JSON schema)
-for the plan step.
+Two backends, chosen at runtime:
 
-The GPU is a SHARED single card (~12 GB, one model resident): we SERIALIZE calls (one
-in flight across the whole service) and back off on 503 ("max pending requests" / model
-still loading), so we never thrash the queue. Reference client:
-mikeos-photos-cloud/server/analysis/vision.py.
+* **OpenRouter (preferred when `OPENROUTER_API_KEY` is set)** — used for the *designer
+  project only*. Routes to `DESIGNER_LLM_MODEL` (default `moonshotai/kimi-k3`, a strong
+  reasoning model with a 1M context) via the OpenAI-compatible chat/completions API.
+* **Ollama fallback** — the shared free `qwen3:8b` at `OLLAMA_GPU_URL` (self-signed,
+  HTTP-Basic, `think:false`, serialized to one in-flight call).
+
+`chat()` has the same signature for both, so the rest of the harness is unchanged.
+The OpenRouter key is scoped to this service's env only — never committed, never shared.
 """
 import asyncio
 import base64
@@ -20,14 +21,24 @@ import httpx
 
 logger = logging.getLogger(__name__)
 
+# --- OpenRouter (Kimi) -----------------------------------------------------
+OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY", "").strip()
+LLM_MODEL = os.environ.get("DESIGNER_LLM_MODEL", "moonshotai/kimi-k3").strip()
+OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
+
+# --- Ollama fallback -------------------------------------------------------
 OLLAMA_GPU_URL = os.environ.get(
     "OLLAMA_GPU_URL",
     "ollama://mikeos:uB49VXwMDy7R2JE0H7mI@81.8.177.182:11443",
 )
 TEXT_MODEL = os.environ.get("OLLAMA_TEXT_MODEL", "qwen3:8b")
 
-# Only ONE GPU request in flight across the whole service.
+# Only ONE shared-GPU request in flight at a time (Ollama path only).
 _gpu_sem = asyncio.Semaphore(1)
+
+
+def backend() -> str:
+    return f"openrouter:{LLM_MODEL}" if OPENROUTER_API_KEY else f"ollama:{TEXT_MODEL}"
 
 
 def _endpoint() -> tuple[str, Dict[str, str]]:
@@ -46,6 +57,64 @@ def _endpoint() -> tuple[str, Dict[str, str]]:
     return f"{scheme}://{rest.rstrip('/')}", headers
 
 
+async def _openrouter_chat(messages: List[Dict[str, Any]], schema: Optional[Dict[str, Any]],
+                           temperature: float, num_predict: int, timeout: float,
+                           max_retries: int) -> str:
+    """One OpenRouter (Kimi) call. Kimi-k3 is a reasoning model, so give generous
+    max_tokens (reasoning tokens count toward the completion budget) — small steps like
+    the classifier are bounded lower to save cost."""
+    or_max = 2000 if num_predict <= 1024 else max(int(num_predict), 12000)
+    body: Dict[str, Any] = {
+        "model": LLM_MODEL,
+        "messages": messages,
+        "temperature": temperature,
+        "max_tokens": or_max,
+        # Skip the model's chain-of-thought — it ~doubles latency and our deterministic
+        # linter/autofix/token-enforcement already guarantee correctness. Route to the
+        # fastest provider.
+        "reasoning": {"enabled": False},
+        "provider": {"sort": "throughput"},
+    }
+    if schema is not None:
+        body["response_format"] = {"type": "json_object"}  # ask for valid JSON
+    headers = {
+        "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+        "Content-Type": "application/json",
+        "HTTP-Referer": "https://designer.osmike.com",
+        "X-Title": "MikeOS Designer",
+    }
+    last_err: Optional[Exception] = None
+    for attempt in range(max_retries):
+        try:
+            async with httpx.AsyncClient(timeout=timeout) as client:
+                resp = await client.post(OPENROUTER_URL, json=body, headers=headers)
+            if resp.status_code in (408, 409, 429, 500, 502, 503, 520, 524, 529):
+                wait = min(40.0, 4.0 * (2 ** attempt))
+                logger.warning("OpenRouter %s, retry in %.0fs", resp.status_code, wait)
+                await asyncio.sleep(wait)
+                continue
+            resp.raise_for_status()
+            data = resp.json()
+            if data.get("error"):
+                raise RuntimeError(str(data["error"]))
+            msg = ((data.get("choices") or [{}])[0] or {}).get("message") or {}
+            content = msg.get("content") or ""
+            if not content.strip():
+                last_err = RuntimeError("OpenRouter returned empty content")
+                await asyncio.sleep(2.0 * (attempt + 1))
+                continue
+            return content
+        except httpx.HTTPStatusError as e:
+            last_err = e
+            logger.warning("OpenRouter HTTP %s (attempt %d)", e.response.status_code, attempt + 1)
+            await asyncio.sleep(min(20.0, 3.0 * (2 ** attempt)))
+        except Exception as e:  # network / timeout / parse
+            last_err = e
+            logger.warning("OpenRouter call failed (attempt %d): %s", attempt + 1, e)
+            await asyncio.sleep(min(20.0, 3.0 * (2 ** attempt)))
+    raise RuntimeError(f"OpenRouter call failed after {max_retries} attempts: {last_err}")
+
+
 async def chat(
     messages: List[Dict[str, Any]],
     *,
@@ -58,9 +127,12 @@ async def chat(
     keep_alive: str = "30m",
     max_retries: int = 4,
 ) -> str:
-    """One serialized Ollama /api/chat call. `schema` constrains output to JSON
-    (the plan step). Retries with exponential backoff on 503 (GPU loading / queue full)
-    and transient network errors. Returns the assistant message content."""
+    """One chat call. `schema` requests JSON output (plan/classify steps). Returns the
+    assistant message content. Routes to OpenRouter/Kimi when configured, else Ollama."""
+    if OPENROUTER_API_KEY:
+        return await _openrouter_chat(messages, schema, temperature, num_predict,
+                                      timeout, max_retries)
+
     base, headers = _endpoint()
     body: Dict[str, Any] = {
         "model": model or TEXT_MODEL,
@@ -84,7 +156,6 @@ async def chat(
                 async with httpx.AsyncClient(timeout=timeout, verify=False) as client:
                     resp = await client.post(f"{base}/api/chat", json=body, headers=headers)
                 if resp.status_code == 503:
-                    # GPU is loading a model / queue is full — back off and retry.
                     wait = min(60.0, 5.0 * (2 ** attempt))
                     logger.warning("GPU 503 (loading/queue full), retry in %.0fs", wait)
                     await asyncio.sleep(wait)

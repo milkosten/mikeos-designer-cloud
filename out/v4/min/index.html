@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>UptimeGuard - Reliable Uptime Monitoring</title>
+<meta content="UptimeGuard ensures your services stay up and running with reliable uptime monitoring. Choose your plan and start protecting your digital infrastructure today." name="description"/>
+<style>
+    :root {
+      --bg: #fafaf9;
+      --surface: #ffffff;
+      --ink: #1a1a19;
+      --muted: #57574f;
+      --line: #e7e7e3;
+      --accent: #3a5a40;
+      --accent-2: #33507a;
+      --font: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --radius: 6px;
+      --step-0: 0.85rem;
+      --step-1: 1.05rem;
+      --step-2: 1.35rem;
+      --step-3: 1.9rem;
+      --step-4: 2.8rem;
+      --step-5: 4rem;
+      --s1: 4px;
+      --s2: 8px;
+      --s3: 16px;
+      --s4: 32px;
+      --s5: 64px;
+      --s6: 96px;
+    }
+    /* Reset & Base */
+    html {
+      font-family: var(--font);
+      scroll-behavior: smooth;
+      color-scheme: light dark;
+    }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.6;
+      font-size: var(--step-1);
+      padding-block: var(--s4);
+      max-width: 960px;
+      margin-inline: auto;
+    }
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+    a:hover, a:focus-visible {
+      text-decoration: underline;
+    }
+    /* Layout */
+    .container {
+      padding-inline: var(--s3);
+    }
+    .section {
+      padding-block: var(--s4);
+    }
+    /* Header */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-block: var(--s3);
+      border-bottom: 1px solid var(--line);
+    }
+    .logo {
+      font-size: var(--step-3);
+      font-weight: 600;
+      letter-spacing: 0.05em;
+    }
+    nav {
+      display: flex;
+      gap: var(--s2);
+    }
+    nav a {
+      font-size: var(--step-0);
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    nav a:hover {
+      color: var(--accent);
+    }
+    /* Hero */
+    .hero {
+      padding-block: var(--s4);
+      text-align: center;
+    }
+    .hero h1 {
+      font-size: var(--step-4);
+      margin-bottom: var(--s2);
+    }
+    .hero p {
+      font-size: var(--step-2);
+      max-width: 65ch;
+      margin-inline: auto;
+    }
+    /* Title Block */
+    .title-block {
+      text-align: center;
+      padding-block: var(--s4);
+    }
+    .title-block h2 {
+      font-size: var(--step-3);
+      margin-bottom: var(--s2);
+    }
+    .toggle {
+      display: flex;
+      gap: var(--s2);
+      justify-content: center;
+    }
+    .toggle button {
+      padding: var(--s1) var(--s2);
+      font-size: var(--step-0);
+      border: 1px solid var(--line);
+      background: var(--surface);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .toggle button:hover {
+      background: var(--accent);
+      color: var(--bg);
+    }
+    /* Plan Tiers */
+    .plan-tiers {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: var(--s4);
+      padding-block: var(--s4);
+    }
+    .plan {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      padding: var(--s3);
+      border-radius: var(--radius);
+      text-align: center;
+    }
+    .plan.recommended {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px var(--accent);
+    }
+    .plan h3 {
+      font-size: var(--step-3);
+      margin-bottom: var(--s2);
+    }
+    .plan .price {
+      font-size: var(--step-4);
+      font-weight: 600;
+      margin-bottom: var(--s2);
+    }
+    .plan p {
+      font-size: var(--step-2);
+      margin-bottom: var(--s3);
+    }
+    .plan ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .plan li {
+      display: flex;
+      align-items: center;
+      gap: var(--s1);
+      margin-bottom: var(--s1);
+    }
+    .plan li svg {
+      width: 16px;
+      height: 16px;
+      fill: var(--ink);
+    }
+    .plan button {
+      margin-top: var(--s3);
+      padding: var(--s1) var(--s2);
+      font-size: var(--step-0);
+      background: var(--accent);
+      color: var(--bg);
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+    }
+    .plan button:hover {
+      background: var(--accent-2);
+    }
+    /* Comparison Table */
+    .comparison-table {
+      overflow-x: auto;
+      margin-block: var(--s4);
+    }
+    .comparison-table table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .comparison-table th, .comparison-table td {
+      padding: var(--s1) var(--s2);
+      text-align: center;
+      border-bottom: 1px solid var(--line);
+    }
+    .comparison-table th {
+      font-size: var(--step-1);
+      background: var(--surface);
+    }
+    .comparison-table td {
+      font-size: var(--step-0);
+    }
+    /* FAQ */
+    .faq {
+      margin-block: var(--s4);
+    }
+    .faq dt {
+      font-size: var(--step-2);
+      margin-bottom: var(--s1);
+    }
+    .faq dd {
+      font-size: var(--step-1);
+      margin-bottom: var(--s2);
+    }
+    /* SVG Icons */
+    .icon-check {
+      width: 16px;
+      height: 16px;
+      fill: var(--ink);
+    }
+    .icon-clock {
+      width: 16px;
+      height: 16px;
+      fill: var(--ink);
+    }
+    .icon-users {
+      width: 16px;
+      height: 16px;
+      fill: var(--ink);
+    }
+    .icon-chart {
+      width: 16px;
+      height: 16px;
+      fill: var(--ink);
+    }
+    .icon-support {
+      width: 16px;
+      height: 16px;
+      fill: var(--ink);
+    }
+    .icon-sla {
+      width: 16px;
+      height: 16px;
+      fill: var(--ink);
+    }
+    /* Footer */
+    footer {
+      padding: var(--s4);
+      background: var(--bg);
+      border-top: 1px solid var(--line);
+      font-size: var(--step-1);
+      color: var(--muted);
+    }
+    footer p {
+      margin: 0;
+    }
+
+/* enforced style tokens */
+:root {
+  --bg: #fafaf9;
+  --surface: #ffffff;
+  --ink: #1a1a19;
+  --muted: #57574f;
+  --line: #e7e7e3;
+  --accent: #3a5a40;
+  --accent-2: #33507a;
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --radius: 6px;
+  --step-0: 0.85rem;
+  --step-1: 1.05rem;
+  --step-2: 1.35rem;
+  --step-3: 1.9rem;
+  --step-4: 2.8rem;
+  --step-5: 4rem;
+  --s1: 4px;
+  --s2: 8px;
+  --s3: 16px;
+  --s4: 32px;
+  --s5: 64px;
+  --s6: 96px;
+}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);}
+</style>
+</head>
+<body>
+<main>
+<header>
+<div class="logo">UptimeGuard</div>
+<nav>
+<a href="#">Home</a>
+<a href="#">Plans</a>
+<a href="#">Support</a>
+</nav>
+</header>
+<section class="hero">
+<h1>Keep Your Systems Running Smoothly</h1>
+<p>Reliable uptime monitoring and support for your business. Choose your plan and start protecting your digital infrastructure today.</p>
+</section>
+<section class="title-block">
+<h2>Choose Your Plan</h2>
+</section>
+<section class="plan-tiers">
+<div class="plan">
+<h3>Starter</h3>
+<div class="price">$9.99/month</div>
+<p>Perfect for small businesses and startups.</p>
+<ul>
+<li><svg width="20" height="20" class="icon-check" viewbox="0 0 24 24"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 1 2.6 2.6l-1.4 1.4z"></path></svg> Uptime Monitoring</li>
+<li><svg width="20" height="20" class="icon-check" viewbox="0 0 24 24"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 1 2.6 2.6l-1.4 1.4z"></path></svg> Custom Alerts</li>
+<li><svg width="20" height="20" class="icon-check" viewbox="0 0 24 24"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 1 2.6 2.6l-1.4 1.4z"></path></svg> Team Collaboration</li>
+<li><svg width="20" height="20" class="icon-check" viewbox="0 0 24 24"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 1 2.6 2.6l-1.4 1.4z"></path></svg> Advanced Reporting</li>
+<li><svg width="20" height="20" class="icon-check" viewbox="0 0 24 24"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 1 2.6 2.6l-1.4 1.4z"></path></svg> 24/7 Support</li>
+<li><svg width="20" height="20" class="icon-check" viewbox="0 0 24 24"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 1 2.6 2.6l-1.4 1.4z"></path></svg> Custom SLA</li>
+</ul>
+<button>Get Started</button>
+</div>
+<div class="plan recommended">
+<h3>Pro</h3>
+<div class="price">$19.99/month</div>
+<p>Perfect for growing businesses and teams.</p>
+<ul>
+<li><svg width="20" height="20" class="icon-check" viewbox="0 0 24 24"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 1 2.6 2.6l-1.4 1.4z"></path></svg> Uptime Monitoring</li>
+<li><svg width="20" height="20" class="icon-check" viewbox="0 0 24 24"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 1 2.6 2.6l-1.4 1.4z"></path></svg> Custom Alerts</li>
+<li><svg width="20" height="20" class="icon-check" viewbox="0 0 24 24"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 1 2.6 2.6l-1.4 1.4z"></path></svg> Team Collaboration</li>
+<li><svg width="20" height="20" class="icon-check" viewbox="0 0 24 24"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 1 2.6 2.6l-1.4 1.4z"></path></svg> Advanced Reporting</li>
+<li><svg width="20" height="20" class="icon-check" viewbox="0 0 24 24"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 1 2.6 2.6l-1.4 1.4z"></path></svg> 24/7 Support</li>
+<li><svg width="20" height="20" class="icon-check" viewbox="0 0 24 24"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 1 2.6 2.6l-1.4 1.4z"></path></svg> Custom SLA</li>
+</ul>
+<button>Get Started</button>
+</div>
+<div class="plan">
+<h3>Team</h3>
+<div class="price">$39.99/month</div>
+<p>Perfect for enterprise teams and large organizations.</p>
+<ul>
+<li><svg width="20" height="20" class="icon-check" viewbox="0 0 24 24"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 1 2.6 2.6l-1.4 1.4z"></path></svg> Uptime Monitoring</li>
+<li><svg width="20" height="20" class="icon-check" viewbox="0 0 24 24"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 1 2.6 2.6l-1.4 1.4z"></path></svg> Custom Alerts</li>
+<li><svg width="20" height="20" class="icon-check" viewbox="0 0 24 24"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 1 2.6 2.6l-1.4 1.4z"></path></svg> Team Collaboration</li>
+<li><svg width="20" height="20" class="icon-check" viewbox="0 0 24 24"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 1 2.6 2.6l-1.4 1.4z"></path></svg> Advanced Reporting</li>
+<li><svg width="20" height="20" class="icon-check" viewbox="0 0 24 24"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 1 2.6 2.6l-1.4 1.4z"></path></svg> 24/7 Support</li>
+<li><svg width="20" height="20" class="icon-check" viewbox="0 0 24 24"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 1 2.6 2.6l-1.4 1.4z"></path></svg> Custom SLA</li>
+</ul>
+<button>Get Started</button>
+</div>
+</section>
+<section class="comparison-table">
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Starter</th>
+<th>Pro</th>
+<th>Team</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Uptime Monitoring</td>
+<td><svg width="20" height="20" class="icon-check" viewbox="0 0 24 24"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 1 2.6 2.6l-1.4 1.4z"></path></svg></td>
+<td><svg width="20" height="20" class="icon-check" viewbox="0 0 24 24"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 1 2.6 2.6l-1.4 1.4z"></path></svg></td>
+<td><svg width="20" height="20" class="icon-check" viewbox="0 0 24 24"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 1 2.6 2.6l-1.4 1.4z"></path></svg></td>
+</tr>
+<tr>
+<td>Custom Alerts</td>
+<td><svg width="20" height="20" class="icon-check" viewbox="0 0 24 24"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 1 2.6 2.6l-1.4 1.4z"></path></svg></td>
+<td><svg width="20" height="20" class="icon-check" viewbox="0 0 24 24"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 1 2.6 2.6l-1.4 1.4z"></path></svg></td>
+<td><svg width="20" height="20" class="icon-check" viewbox="0 0 24 24"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 1 2.6 2.6l-1.4 1.4z"></path></svg></td>
+</tr>
+<tr>
+<td>Team Collaboration</td>
+<td><svg width="20" height="20" class="icon-check" viewbox="0 0 24 24"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 1 2.6 2.6l-1.4 1.4z"></path></svg></td>
+<td><svg width="20" height="20" class="icon-check" viewbox="0 0 24 24"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 1 2.6 2.6l-1.4 1.4z"></path></svg></td>
+<td><svg width="20" height="20" class="icon-check" viewbox="0 0 24 24"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 1 2.6 2.6l-1.4 1.4z"></path></svg></td>
+</tr>
+<tr>
+<td>Advanced Reporting</td>
+<td><svg width="20" height="20" class="icon-check" viewbox="0 0 24 24"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 1 2.6 2.6l-1.4 1.4z"></path></svg></td>
+<td><svg width="20" height="20" class="icon-check" viewbox="0 0 24 24"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 1 2.6 2.6l-1.4 1.4z"></path></svg></td>
+<td><svg width="20" height="20" class="icon-check" viewbox="0 0 24 24"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 1 2.6 2.6l-1.4 1.4z"></path></svg></td>
+</tr>
+<tr>
+<td>24/7 Support</td>
+<td><svg width="20" height="20" class="icon-check" viewbox="0 0 24 24"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 1 2.6 2.6l-1.4 1.4z"></path></svg></td>
+<td><svg width="20" height="20" class="icon-check" viewbox="0 0 24 24"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 1 2.6 2.6l-1.4 1.4z"></path></svg></td>
+<td><svg width="20" height="20" class="icon-check" viewbox="0 0 24 24"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 1 2.6 2.6l-1.4 1.4z"></path></svg></td>
+</tr>
+<tr>
+<td>Custom SLA</td>
+<td><svg width="20" height="20" class="icon-check" viewbox="0 0 24 24"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 1 2.6 2.6l-1.4 1.4z"></path></svg></td>
+<td><svg width="20" height="20" class="icon-check" viewbox="0 0 24 24"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 1 2.6 2.6l-1.4 1.4z"></path></svg></td>
+<td><svg width="20" height="20" class="icon-check" viewbox="0 0 24 24"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 1 2.6 2.6l-1.4 1.4z"></path></svg></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section class="faq">
+<dl>
+<dt class="faq dt">What payment methods do you accept?</dt>
+<dd class="faq dd">Credit cards, PayPal, and bank transfer.</dd>
+<dt class="faq dt">Can I cancel anytime?</dt>
+<dd class="faq dd">Yes, with a 30-day notice period.</dd>
+<dt class="faq dt">Is there a free trial?</dt>
+<dd class="faq dd">Yes, 14 days of free access.</dd>
+<dt class="faq dt">What happens if I exceed my SLA?</dt>
+<dd class="faq dd">You’ll receive a 10% discount on the next month’s billing.</dd>
+<dt class="faq dt">Can I upgrade my plan at any time?</dt>
+<dd class="faq dd">Yes, and your new plan will apply immediately.</dd>
+</dl>
+</section>
+</main>
+<footer>
+<p>© 2025 UptimeGuard. All rights reserved. Contact: support@uptimeguard.com | Privacy Policy | Terms of Service</p>
+</footer>
+</body>
+</html>

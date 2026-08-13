@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>Pricing — Pinglens Uptime Monitoring</title>
+<meta content="Simple, honest pricing for Pinglens uptime monitoring. Start free, scale to 500 monitors with status pages, SMS alerts, and 30-second checks. Plans from $0 to $49/month." name="description"/>
+<style>
+:root {
+  --bg: #f7f8fa;
+  --surface: #ffffff;
+  --ink: #0f1729;
+  --muted: #51607d;
+  --line: #e6eaf1;
+  --accent: #4f46e5;
+  --accent-2: #0ea5e9;
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --radius: 14px;
+  --step-0: 0.85rem;
+  --step-1: 1.05rem;
+  --step-2: 1.35rem;
+  --step-3: 1.9rem;
+  --step-4: 2.8rem;
+  --step-5: 4rem;
+  --s1: 4px;
+  --s2: 8px;
+  --s3: 16px;
+  --s4: 32px;
+  --s5: 64px;
+  --s6: 96px;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: var(--step-1);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+img, svg { display: block; }
+a { color: inherit; text-decoration: none; }
+h1, h2, h3, h4 { margin: 0; font-weight: 600; letter-spacing: -0.02em; line-height: 1.15; text-wrap: balance; }
+p { margin: 0; }
+ul, ol { margin: 0; padding: 0; list-style: none; }
+button { font: inherit; }
+
+.wrap { max-width: 1160px; margin-inline: auto; padding-inline: clamp(1rem, 4vw, 2rem); }
+
+/* ---------- focus ---------- */
+a:focus-visible, button:focus-visible, summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+/* ---------- header ---------- */
+.site-header {
+  position: sticky; top: 0; z-index: 50;
+  background: color-mix(in srgb, var(--surface) 82%, transparent);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
+}
+.header-inner { display: flex; align-items: center; gap: var(--s4); height: 64px; }
+.wordmark { display: flex; align-items: center; gap: var(--s2); font-weight: 700; font-size: 1.15rem; letter-spacing: -0.02em; }
+.wordmark svg { color: var(--accent); }
+.main-nav { display: flex; align-items: center; gap: var(--s4); margin-left: var(--s3); font-size: var(--step-0); }
+.main-nav a { color: var(--muted); padding: var(--s1) 0; border-bottom: 2px solid transparent; transition: color .2s ease, border-color .2s ease; }
+.main-nav a:hover { color: var(--ink); }
+.main-nav a[aria-current="page"] { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+.header-actions { margin-left: auto; display: flex; align-items: center; gap: var(--s3); }
+.signin { font-size: var(--step-0); color: var(--muted); font-weight: 500; transition: color .2s ease; }
+.signin:hover { color: var(--ink); }
+
+/* ---------- buttons ---------- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--s2);
+  padding: 0.7em 1.4em;
+  border-radius: 10px;
+  font-weight: 600; font-size: var(--step-0);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background .2s ease, box-shadow .2s ease, transform .15s ease, border-color .2s ease, color .2s ease;
+}
+.btn-primary { background: var(--accent); color: #fff; box-shadow: 0 1px 2px rgba(15,23,41,.08), 0 6px 16px -6px rgba(79,70,229,.45); }
+.btn-primary:hover { background: #4338ca; transform: translateY(-1px); }
+.btn-primary:active { transform: translateY(0); }
+.btn-outline { background: var(--surface); color: var(--ink); border-color: var(--line); box-shadow: 0 1px 2px rgba(15,23,41,.05); }
+.btn-outline:hover { border-color: #c9d2e0; box-shadow: 0 2px 6px rgba(15,23,41,.07); transform: translateY(-1px); }
+.btn-sm { padding: 0.5em 1em; font-size: var(--step-0); }
+.btn-block { width: 100%; }
+
+/* ---------- title block ---------- */
+.title-block { padding-block: clamp(3.5rem, 8vw, 6rem) clamp(2.5rem, 5vw, 4rem); text-align: center; }
+.eyebrow {
+  display: inline-block; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--accent); margin-bottom: var(--s3);
+}
+.title-block h1 { font-size: clamp(2.1rem, 5vw, var(--step-5)); max-width: 22ch; margin-inline: auto; }
+.title-block .subline { color: var(--muted); max-width: 58ch; margin: var(--s3) auto 0; font-size: var(--step-1); }
+
+/* toggle */
+.toggle-row { margin-top: var(--s4); display: flex; flex-direction: column; align-items: center; gap: var(--s2); }
+.toggle {
+  display: inline-flex; gap: var(--s1); padding: var(--s1);
+  background: #eceff5; border: 1px solid var(--line); border-radius: 999px;
+}
+.toggle span {
+  display: inline-flex; align-items: center; gap: var(--s2);
+  padding: 0.5em 1.1em; border-radius: 999px;
+  font-size: var(--step-0); font-weight: 600; color: var(--muted);
+}
+.toggle span[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgba(15,23,41,.12); }
+.chip {
+  font-size: 0.7rem; font-weight: 700; letter-spacing: 0.02em;
+  color: var(--accent-2); background: color-mix(in srgb, var(--accent-2) 12%, var(--surface));
+  padding: 0.15em 0.55em; border-radius: 999px;
+}
+.toggle-note { font-size: var(--step-0); color: var(--muted); }
+
+/* ---------- plans ---------- */
+.plans { padding-block: 0 clamp(3.5rem, 8vw, 7rem); }
+.plans-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s4); align-items: stretch; }
+.plan {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: var(--s4);
+  display: flex; flex-direction: column; gap: var(--s3);
+  box-shadow: 0 1px 2px rgba(15,23,41,.04), 0 8px 24px -12px rgba(15,23,41,.08);
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+.plan:hover { transform: translateY(-3px); box-shadow: 0 2px 4px rgba(15,23,41,.05), 0 16px 36px -14px rgba(15,23,41,.14); }
+.plan.featured {
+  border: 2px solid var(--accent);
+  box-shadow: 0 2px 4px rgba(15,23,41,.05), 0 20px 44px -16px rgba(79,70,229,.28);
+}
+.plan-tag {
+  position: absolute; top: -0.8rem; left: 50%; transform: translateX(-50%);
+  font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+  color: #fff; background: var(--accent);
+  padding: 0.3em 0.9em; border-radius: 999px;
+  box-shadow: 0 4px 10px -3px rgba(79,70,229,.5);
+  white-space: nowrap;
+}
+.plan-name { font-size: var(--step-0); font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+.plan.featured .plan-name { color: var(--accent); }
+.plan-price { display: flex; align-items: baseline; gap: var(--s2); }
+.plan-price .amount { font-size: var(--step-4); font-weight: 700; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; line-height: 1; }
+.plan-price .period { color: var(--muted); font-size: var(--step-0); }
+.plan-alt { font-size: var(--step-0); color: var(--muted); margin-top: calc(-1 * var(--s2)); }
+.plan-blurb { color: var(--muted); font-size: var(--step-0); min-height: 3.2em; }
+.plan-features { display: flex; flex-direction: column; gap: var(--s2); padding-block: var(--s2); border-top: 1px solid var(--line); margin-top: var(--s1); padding-top: var(--s3); }
+.plan-features li { display: flex; align-items: flex-start; gap: var(--s2); font-size: var(--step-0); color: var(--ink); }
+.plan-features svg { flex: none; margin-top: 0.2em; color: var(--muted); }
+.plan.featured .plan-features svg { color: var(--accent-2); }
+.plan .btn { margin-top: auto; }
+
+/* ---------- comparison ---------- */
+.compare { padding-block: clamp(3.5rem, 8vw, 7rem); background: var(--surface); border-block: 1px solid var(--line); }
+.section-head { max-width: 62ch; margin-bottom: var(--s4); }
+.section-head h2 { font-size: clamp(1.6rem, 3.5vw, var(--step-4)); }
+.section-head p { color: var(--muted); margin-top: var(--s2); }
+.table-scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); box-shadow: 0 1px 2px rgba(15,23,41,.04), 0 10px 28px -14px rgba(15,23,41,.1); }
+table { border-collapse: collapse; width: 100%; min-width: 640px; font-size: var(--step-0); }
+th, td { padding: 0.8rem 1.1rem; text-align: center; border-bottom: 1px solid var(--line); }
+thead th { background: var(--bg); font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+thead th.col-pro { color: var(--accent); }
+tbody th[scope="row"], thead th:first-child { text-align: left; font-weight: 500; color: var(--ink); position: sticky; left: 0; background: var(--surface); min-width: 220px; box-shadow: 1px 0 0 var(--line); }
+thead th:first-child { background: var(--bg); z-index: 2; }
+tbody th[scope="row"] { z-index: 1; }
+tr.group td {
+  text-align: left; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--muted); background: var(--bg); padding: 0.55rem 1.1rem;
+}
+tbody tr:last-child th, tbody tr:last-child td { border-bottom: none; }
+td .val { font-variant-numeric: tabular-nums; color: var(--ink); font-weight: 500; }
+td svg { margin-inline: auto; }
+td .check-slate { color: #94a3b8; }
+td .check-pro { color: var(--accent); }
+td .dash { color: #c3ccd9; font-weight: 600; }
+td.col-pro, th.col-pro { background: color-mix(in srgb, var(--accent) 4%, var(--surface)); }
+tbody tr:hover th, tbody tr:hover td { background: color-mix(in srgb, var(--accent-2) 4%, var(--surface)); }
+tbody tr:hover td.col-pro { background: color-mix(in srgb, var(--accent) 7%, var(--surface)); }
+
+/* ---------- FAQ ---------- */
+.faq { padding-block: clamp(3.5rem, 8vw, 7rem); }
+.faq-grid { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.4fr); gap: var(--s5); align-items: start; }
+.faq-intro h2 { font-size: clamp(1.6rem, 3.5vw, var(--step-3)); }
+.faq-intro p { color: var(--muted); margin-top: var(--s3); max-width: 38ch; }
+.faq-intro a { color: var(--accent); font-weight: 600; }
+.faq-intro a:hover { text-decoration: underline; }
+.faq-list { display: flex; flex-direction: column; gap: var(--s3); }
+details {
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  box-shadow: 0 1px 2px rgba(15,23,41,.04);
+  transition: border-color .2s ease, box-shadow .2s ease;
+}
+details[open] { border-color: #c9d2e0; box-shadow: 0 2px 4px rgba(15,23,41,.05), 0 10px 24px -12px rgba(15,23,41,.1); }
+summary {
+  list-style: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: space-between; gap: var(--s3);
+  padding: var(--s3) var(--s4);
+  font-weight: 600; font-size: var(--step-1);
+}
+summary::-webkit-details-marker { display: none; }
+summary .chev { flex: none; color: var(--muted); transition: transform .2s ease; }
+details[open] summary .chev { transform: rotate(180deg); color: var(--accent); }
+details .answer { padding: 0 var(--s4) var(--s4); color: var(--muted); font-size: var(--step-1); max-width: 62ch; }
+
+/* ---------- footer ---------- */
+.footer-cta { border-top: 1px solid var(--line); background: var(--surface); }
+.footer-cta-inner {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--s4);
+  padding-block: var(--s5); flex-wrap: wrap;
+}
+.footer-cta h2 { font-size: clamp(1.4rem, 3vw, var(--step-3)); }
+.footer-cta p { color: var(--muted); margin-top: var(--s1); font-size: var(--step-0); }
+.site-footer { border-top: 1px solid var(--line); background: var(--surface); }
+.footer-grid { display: grid; grid-template-columns: 1.4fr repeat(3, 1fr); gap: var(--s4); padding-block: var(--s5) var(--s4); }
+.footer-brand p { color: var(--muted); font-size: var(--step-0); margin-top: var(--s2); max-width: 30ch; }
+.footer-col h3 { font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); font-weight: 700; margin-bottom: var(--s3); }
+.footer-col ul { display: flex; flex-direction: column; gap: var(--s2); }
+.footer-col a { color: var(--muted); font-size: var(--step-0); transition: color .2s ease; }
+.footer-col a:hover { color: var(--ink); }
+.footer-bottom {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--s3); flex-wrap: wrap;
+  padding-block: var(--s3) var(--s4); border-top: 1px solid var(--line);
+  font-size: var(--step-0); color: var(--muted);
+}
+.badges { display: flex; gap: var(--s2); flex-wrap: wrap; }
+.badge {
+  display: inline-flex; align-items: center; gap: var(--s2);
+  font-size: 0.75rem; font-weight: 600; color: var(--muted);
+  border: 1px solid var(--line); border-radius: 999px; padding: 0.3em 0.8em; background: var(--bg);
+}
+.badge svg { color: var(--accent-2); }
+
+/* ---------- responsive ---------- */
+@media (max-width: 960px) {
+  .plans-grid { grid-template-columns: 1fr; max-width: 480px; margin-inline: auto; }
+  .plan.featured { order: -1; }
+  .faq-grid { grid-template-columns: 1fr; gap: var(--s4); }
+  .footer-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 720px) {
+  .main-nav { display: none; }
+  .footer-cta-inner { flex-direction: column; align-items: flex-start; }
+}
+@media (max-width: 480px) {
+  .footer-grid { grid-template-columns: 1fr; }
+  .header-actions .signin { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation: none !important; }
+}
+
+/* enforced style tokens */
+:root {
+  --bg: #f7f8fa;
+  --surface: #ffffff;
+  --ink: #0f1729;
+  --muted: #51607d;
+  --line: #e6eaf1;
+  --accent: #4f46e5;
+  --accent-2: #0ea5e9;
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --radius: 14px;
+  --step-0: 0.85rem;
+  --step-1: 1.05rem;
+  --step-2: 1.35rem;
+  --step-3: 1.9rem;
+  --step-4: 2.8rem;
+  --step-5: 4rem;
+  --s1: 4px;
+  --s2: 8px;
+  --s3: 16px;
+  --s4: 32px;
+  --s5: 64px;
+  --s6: 96px;
+}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);}
+</style>
+</head>
+<body>
+<!-- ============ HEADER ============ -->
+<header class="site-header">
+<div class="wrap header-inner">
+<a aria-label="Pinglens home" class="wordmark" href="index.html">
+<svg aria-hidden="true" fill="none" height="22" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24" width="22">
+<circle cx="12" cy="12" fill="currentColor" r="2.2" stroke="none"></circle>
+<path d="M12 5.5a6.5 6.5 0 0 1 6.5 6.5"></path>
+<path d="M12 2a10 10 0 0 1 10 10"></path>
+</svg>
+      Pinglens
+    </a>
+<nav aria-label="Primary" class="main-nav">
+<a href="#">Features</a>
+<a href="#">Status Pages</a>
+<a href="#">Docs</a>
+<a aria-current="page" href="index.html">Pricing</a>
+</nav>
+<div class="header-actions">
+<a class="signin" href="#">Sign in</a>
+<a class="btn btn-primary btn-sm" href="#">Start free</a>
+</div>
+</div>
+</header>
+<main>
+<!-- ============ TITLE BLOCK ============ -->
+<section aria-labelledby="page-title" class="title-block wrap">
+<span class="eyebrow">Pricing</span>
+<h1 id="page-title">Monitoring that pays for itself the first time your site goes down.</h1>
+<p class="subline">Every plan includes unlimited team seats and alert history. Start free — upgrade when you need faster checks and more monitors.</p>
+<div class="toggle-row">
+<div aria-label="Billing period" class="toggle" role="group">
+<span aria-pressed="false">Monthly</span>
+<span aria-pressed="true">Annual <span class="chip">Save 20%</span></span>
+</div>
+<p class="toggle-note">Prices shown per month, billed annually.</p>
+</div>
+</section>
+<!-- ============ PLAN TIERS ============ -->
+<section aria-label="Plan tiers" class="plans wrap">
+<div class="plans-grid">
+<!-- Starter -->
+<article class="plan">
+<h2 class="plan-name">Starter</h2>
+<div class="plan-price">
+<span class="amount">$0</span>
+<span class="period">/ mo, free forever</span>
+</div>
+<p class="plan-blurb">For side projects and personal sites that just need a nudge when they're down.</p>
+<ul class="plan-features">
+<li><svg aria-hidden="true" fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24" width="20"><rect height="12" rx="2" width="17" x="3.5" y="4.5"></rect><path d="M9 20.5h6M12 16.5v4"></path></svg>10 monitors</li>
+<li><svg aria-hidden="true" fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24" width="20"><circle cx="12" cy="12" r="8.5"></circle><path d="M12 7.5V12l3 2"></path></svg>5-minute check interval</li>
+<li><svg aria-hidden="true" fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24" width="20"><rect height="13" rx="2" width="17" x="3.5" y="5.5"></rect><path d="M4.5 7.5l7.5 5.5 7.5-5.5"></path></svg>Email alerts</li>
+<li><svg aria-hidden="true" fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24" width="20"><rect height="17" rx="2" width="16" x="4" y="3.5"></rect><path d="M8 8h8M8 12h8M8 16h5"></path></svg>1 status page</li>
+<li><svg aria-hidden="true" fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24" width="20"><path d="M12 3.5a8.5 8.5 0 1 1-8.4 9.7"></path><path d="M3.5 4.5v4h4"></path></svg>30-day alert history</li>
+</ul>
+<a class="btn btn-outline btn-block" href="#">Start free</a>
+</article>
+<!-- Pro (recommended) -->
+<article class="plan featured">
+<span class="plan-tag">Most popular</span>
+<h2 class="plan-name">Pro</h2>
+<div class="plan-price">
+<span class="amount">$19</span>
+<span class="period">/ mo, billed annually</span>
+</div>
+<p class="plan-alt">$24 billed monthly</p>
+<p class="plan-blurb">For growing products that need faster detection and richer alerts.</p>
+<ul class="plan-features">
+<li><svg aria-hidden="true" fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24" width="20"><rect height="12" rx="2" width="17" x="3.5" y="4.5"></rect><path d="M9 20.5h6M12 16.5v4"></path></svg>50 monitors</li>
+<li><svg aria-hidden="true" fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24" width="20"><circle cx="12" cy="12" r="8.5"></circle><path d="M12 7.5V12l3 2"></path></svg>1-minute checks</li>
+<li><svg aria-hidden="true" fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24" width="20"><path d="M18 8.5a6 6 0 1 0-12 0c0 5-2 6-2 6h16s-2-1-2-6"></path><path d="M10.3 18.5a1.8 1.8 0 0 0 3.4 0"></path></svg>Email + Slack + webhook alerts</li>
+<li><svg aria-hidden="true" fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24" width="20"><rect height="17" rx="2" width="16" x="4" y="3.5"></rect><path d="M8 8h8M8 12h8M8 16h5"></path></svg>3 status pages</li>
+<li><svg aria-hidden="true" fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24" width="20"><rect height="18" rx="2" width="9" x="7.5" y="3"></rect><path d="M11 17.5h2"></path></svg>SMS alerts — 20/mo included</li>
+<li><svg aria-hidden="true" fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24" width="20"><rect height="16" rx="2" width="17" x="3.5" y="5"></rect><path d="M3.5 9.5h17M8 3v4M16 3v4"></path></svg>12-month history</li>
+<li><svg aria-hidden="true" fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24" width="20"><path d="M12 3.5l7 3v5c0 4.5-3 8-7 9.5-4-1.5-7-5-7-9.5v-5l7-3z"></path><path d="M9 11.5l2 2 4-4"></path></svg>SSL &amp; domain expiry alerts</li>
+</ul>
+<a class="btn btn-primary btn-block" href="#">Start 14-day trial</a>
+</article>
+<!-- Team -->
+<article class="plan">
+<h2 class="plan-name">Team</h2>
+<div class="plan-price">
+<span class="amount">$49</span>
+<span class="period">/ mo, billed annually</span>
+</div>
+<p class="plan-alt">$59 billed monthly</p>
+<p class="plan-blurb">For teams running customer-facing services at scale.</p>
+<ul class="plan-features">
+<li><svg aria-hidden="true" fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24" width="20"><rect height="12" rx="2" width="17" x="3.5" y="4.5"></rect><path d="M9 20.5h6M12 16.5v4"></path></svg>500 monitors</li>
+<li><svg aria-hidden="true" fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24" width="20"><path d="M13 2.5L4.5 13.5H11l-1 8 8.5-11H12l1-8z"></path></svg>30-second checks</li>
+<li><svg aria-hidden="true" fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24" width="20"><rect height="18" rx="2" width="9" x="7.5" y="3"></rect><path d="M11 17.5h2"></path></svg>Unlimited SMS alerts</li>
+<li><svg aria-hidden="true" fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24" width="20"><rect height="17" rx="2" width="16" x="4" y="3.5"></rect><path d="M8 8h8M8 12h8M8 16h5"></path></svg>Unlimited status pages</li>
+<li><svg aria-hidden="true" fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24" width="20"><circle cx="12" cy="12" r="8.5"></circle><path d="M3.5 12h17M12 3.5c2.5 2.3 3.8 5.2 3.8 8.5s-1.3 6.2-3.8 8.5c-2.5-2.3-3.8-5.2-3.8-8.5S9.5 5.8 12 3.5z"></path></svg>Multi-region checks (3 locations)</li>
+<li><svg aria-hidden="true" fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24" width="20"><circle cx="9" cy="8" r="3.2"></circle><path d="M3.5 19.5c0-3 2.5-5 5.5-5s5.5 2 5.5 5"></path><path d="M16 5.2a3.2 3.2 0 0 1 0 5.8M17.5 14.8c1.8.7 3 2.2 3 4.7"></path></svg>Escalation policies &amp; on-call rotations</li>
+<li><svg aria-hidden="true" fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24" width="20"><rect height="16" rx="2" width="17" x="3.5" y="5"></rect><path d="M3.5 9.5h17M8 3v4M16 3v4"></path></svg>24-month history</li>
+<li><svg aria-hidden="true" fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24" width="20"><path d="M4.5 13a7.5 7.5 0 0 1 15 0"></path><rect height="6" rx="1.5" width="4" x="3.5" y="13"></rect><rect height="6" rx="1.5" width="4" x="16.5" y="13"></rect><path d="M18.5 19v.5a2.5 2.5 0 0 1-2.5 2.5h-3"></path></svg>Priority support</li>
+</ul>
+<a class="btn btn-outline btn-block" href="#">Start 14-day trial</a>
+</article>
+</div>
+</section>
+<!-- ============ COMPARISON TABLE ============ -->
+<section aria-labelledby="compare-title" class="compare">
+<div class="wrap">
+<div class="section-head">
+<span class="eyebrow">Compare plans</span>
+<h2 id="compare-title">Every feature, side by side.</h2>
+<p>No hidden limits, no per-seat pricing. Here's exactly what each plan includes.</p>
+</div>
+<div class="table-scroll">
+<table>
+<caption class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);">Feature comparison across Starter, Pro, and Team plans</caption>
+<thead>
+<tr>
+<th scope="col">Feature</th>
+<th scope="col">Starter</th>
+<th class="col-pro" scope="col">Pro</th>
+<th scope="col">Team</th>
+</tr>
+</thead>
+<tbody>
+<tr class="group"><td colspan="4">Monitoring</td></tr>
+<tr>
+<th scope="row">Monitors</th>
+<td><span class="val">10</span></td>
+<td class="col-pro"><span class="val">50</span></td>
+<td><span class="val">500</span></td>
+</tr>
+<tr>
+<th scope="row">Check interval</th>
+<td><span class="val">5 min</span></td>
+<td class="col-pro"><span class="val">1 min</span></td>
+<td><span class="val">30 sec</span></td>
+</tr>
+<tr>
+<th scope="row">Multi-region locations</th>
+<td><span class="val">1</span></td>
+<td class="col-pro"><span class="val">2</span></td>
+<td><span class="val">3</span></td>
+</tr>
+<tr>
+<th scope="row">SSL &amp; domain expiry alerts</th>
+<td><span aria-label="Not included" class="dash">–</span></td>
+<td class="col-pro"><svg aria-label="Included" class="check-pro" fill="none" height="16" role="img" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><title>Included</title><path d="M4.5 12.5l5 5 10-11"></path></svg></td>
+<td><svg aria-label="Included" class="check-slate" fill="none" height="16" role="img" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><title>Included</title><path d="M4.5 12.5l5 5 10-11"></path></svg></td>
+</tr>
+<tr>
+<th scope="row">Keyword &amp; heartbeat monitoring</th>
+<td><span aria-label="Not included" class="dash">–</span></td>
+<td class="col-pro"><svg aria-label="Included" class="check-pro" fill="none" height="16" role="img" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><title>Included</title><path d="M4.5 12.5l5 5 10-11"></path></svg></td>
+<td><svg aria-label="Included" class="check-slate" fill="none" height="16" role="img" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><title>Included</title><path d="M4.5 12.5l5 5 10-11"></path></svg></td>
+</tr>
+<tr class="group"><td colspan="4">Alerts</td></tr>
+<tr>
+<th scope="row">Email alerts</th>
+<td><svg aria-label="Included" class="check-slate" fill="none" height="16" role="img" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><title>Included</title><path d="M4.5 12.5l5 5 10-11"></path></svg></td>
+<td class="col-pro"><svg aria-label="Included" class="check-pro" fill="none" height="16" role="img" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><title>Included</title><path d="M4.5 12.5l5 5 10-11"></path></svg></td>
+<td><svg aria-label="Included" class="check-slate" fill="none" height="16" role="img" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><title>Included</title><path d="M4.5 12.5l5 5 10-11"></path></svg></td>
+</tr>
+<tr>
+<th scope="row">Slack &amp; webhooks</th>
+<td><span aria-label="Not included" class="dash">–</span></td>
+<td class="col-pro"><svg aria-label="Included" class="check-pro" fill="none" height="16" role="img" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><title>Included</title><path d="M4.5 12.5l5 5 10-11"></path></svg></td>
+<td><svg aria-label="Included" class="check-slate" fill="none" height="16" role="img" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><title>Included</title><path d="M4.5 12.5l5 5 10-11"></path></svg></td>
+</tr>
+<tr>
+<th scope="row">SMS alerts</th>
+<td><span aria-label="Not included" class="dash">–</span></td>
+<td class="col-pro"><span class="val">20 per mo</span></td>
+<td><span class="val">Unlimited</span></td>
+</tr>
+<tr>
+<th scope="row">Escalation policies</th>
+<td><span aria-label="Not included" class="dash">–</span></td>
+<td class="col-pro"><span aria-label="Not included" class="dash">–</span></td>
+<td><svg aria-label="Included" class="check-slate" fill="none" height="16" role="img" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><title>Included</title><path d="M4.5 12.5l5 5 10-11"></path></svg></td>
+</tr>
+<tr class="group"><td colspan="4">Reporting</td></tr>
+<tr>
+<th scope="row">Status pages</th>
+<td><span class="val">1</span></td>
+<td class="col-pro"><span class="val">3</span></td>
+<td><span class="val">Unlimited</span></td>
+</tr>
+<tr>
+<th scope="row">Custom domain on status page</th>
+<td><span aria-label="Not included" class="dash">–</span></td>
+<td class="col-pro"><svg aria-label="Included" class="check-pro" fill="none" height="16" role="img" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><title>Included</title><path d="M4.5 12.5l5 5 10-11"></path></svg></td>
+<td><svg aria-label="Included" class="check-slate" fill="none" height="16" role="img" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><title>Included</title><path d="M4.5 12.5l5 5 10-11"></path></svg></td>
+</tr>
+<tr>
+<th scope="row">Alert history</th>
+<td><span class="val">30 days</span></td>
+<td class="col-pro"><span class="val">12 months</span></td>
+<td><span class="val">24 months</span></td>
+</tr>
+<tr>
+<th scope="row">API access</th>
+<td><span aria-label="Not included" class="dash">–</span></td>
+<td class="col-pro"><svg aria-label="Included" class="check-pro" fill="none" height="16" role="img" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><title>Included</title><path d="M4.5 12.5l5 5 10-11"></path></svg></td>
+<td><svg aria-label="Included" class="check-slate" fill="none" height="16" role="img" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><title>Included</title><path d="M4.5 12.5l5 5 10-11"></path></svg></td>
+</tr>
+<tr class="group"><td colspan="4">Team</td></tr>
+<tr>
+<th scope="row">Team seats</th>
+<td><span class="val">Unlimited</span></td>
+<td class="col-pro"><span class="val">Unlimited</span></td>
+<td><span class="val">Unlimited</span></td>
+</tr>
+<tr>
+<th scope="row">SSO / SAML</th>
+<td><span aria-label="Not included" class="dash">–</span></td>
+<td class="col-pro"><span aria-label="Not included" class="dash">–</span></td>
+<td><svg aria-label="Included" class="check-slate" fill="none" height="16" role="img" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><title>Included</title><path d="M4.5 12.5l5 5 10-11"></path></svg></td>
+</tr>
+<tr>
+<th scope="row">Priority support</th>
+<td><span aria-label="Not included" class="dash">–</span></td>
+<td class="col-pro"><span aria-label="Not included" class="dash">–</span></td>
+<td><svg aria-label="Included" class="check-slate" fill="none" height="16" role="img" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><title>Included</title><path d="M4.5 12.5l5 5 10-11"></path></svg></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<!-- ============ FAQ ============ -->
+<section aria-labelledby="faq-title" class="faq wrap">
+<div class="faq-grid">
+<div class="faq-intro">
+<span class="eyebrow">FAQ</span>
+<h2 id="faq-title">Billing questions, answered plainly.</h2>
+<p>Something else on your mind? <a href="#">Talk to us</a> — a human replies within a few hours.</p>
+</div>
+<div class="faq-list">
+<details>
+<summary>What counts as a monitor?
+            <svg aria-hidden="true" class="chev" fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24" width="20"><path d="M6 9.5l6 6 6-6"></path></svg>
+</summary>
+<p class="answer">One URL, IP, or heartbeat endpoint you check. A single site with 3 pages checked separately counts as 3 monitors.</p>
+</details>
+<details>
+<summary>Can I switch between monthly and annual billing?
+            <svg aria-hidden="true" class="chev" fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24" width="20"><path d="M6 9.5l6 6 6-6"></path></svg>
+</summary>
+<p class="answer">Yes, anytime from Settings → Billing. Switching to annual applies the 20% discount immediately with prorated credit for the remainder of your current month.</p>
+</details>
+<details>
+<summary>What happens if I go over my SMS allowance on Pro?
+            <svg aria-hidden="true" class="chev" fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24" width="20"><path d="M6 9.5l6 6 6-6"></path></svg>
+</summary>
+<p class="answer">We never cut off alerts mid-incident. Extra SMS messages are billed at $0.10 each, and we'll email you when you hit 80% of the included allowance.</p>
+</details>
+<details>
+<summary>Do you offer refunds?
+            <svg aria-hidden="true" class="chev" fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24" width="20"><path d="M6 9.5l6 6 6-6"></path></svg>
+</summary>
+<p class="answer">Annual plans can be cancelled within 30 days for a full refund. After that, cancellation stops renewal — no partial refunds, and your plan stays active until the period ends.</p>
+</details>
+<details>
+<summary>Is the free plan really free?
+            <svg aria-hidden="true" class="chev" fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24" width="20"><path d="M6 9.5l6 6 6-6"></path></svg>
+</summary>
+<p class="answer">Yes — no credit card required, no trial clock. 10 monitors and email alerts forever.</p>
+</details>
+</div>
+</div>
+</section>
+</main>
+<!-- ============ FOOTER CTA ============ -->
+<section aria-labelledby="cta-title" class="footer-cta">
+<div class="wrap footer-cta-inner">
+<div>
+<h2 id="cta-title">Join 4,200+ teams monitoring with Pinglens.</h2>
+<p>Set up your first monitor in under two minutes. No credit card required.</p>
+</div>
+<a class="btn btn-primary" href="#">Start free</a>
+</div>
+</section>
+<!-- ============ FOOTER ============ -->
+<footer class="site-footer">
+<div class="wrap">
+<div class="footer-grid">
+<div class="footer-brand">
+<a aria-label="Pinglens home" class="wordmark" href="index.html">
+<svg aria-hidden="true" fill="none" height="22" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24" width="22">
+<circle cx="12" cy="12" fill="currentColor" r="2.2" stroke="none"></circle>
+<path d="M12 5.5a6.5 6.5 0 0 1 6.5 6.5"></path>
+<path d="M12 2a10 10 0 0 1 10 10"></path>
+</svg>
+          Pinglens
+        </a>
+<p>Uptime monitoring that tells you before your customers do.</p>
+</div>
+<nav aria-label="Product" class="footer-col">
+<h3>Product</h3>
+<ul>
+<li><a href="#">Features</a></li>
+<li><a href="#">Status Pages</a></li>
+<li><a href="#">Changelog</a></li>
+<li><a href="#">Roadmap</a></li>
+</ul>
+</nav>
+<nav aria-label="Resources" class="footer-col">
+<h3>Resources</h3>
+<ul>
+<li><a href="#">Docs</a></li>
+<li><a href="#">API Reference</a></li>
+<li><a href="#">System Status</a></li>
+<li><a href="#">Blog</a></li>
+</ul>
+</nav>
+<nav aria-label="Company" class="footer-col">
+<h3>Company</h3>
+<ul>
+<li><a href="#">About</a></li>
+<li><a href="#">Contact</a></li>
+<li><a href="#">Security</a></li>
+<li><a href="#">Privacy</a></li>
+</ul>
+</nav>
+</div>
+<div class="footer-bottom">
+<p>© 2025 Pinglens, Inc. — SOC 2 Type II certified</p>
+<div class="badges">
+<span class="badge">
+<svg aria-hidden="true" fill="none" height="14" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="14"><path d="M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6l7-3z"></path><path d="M9 12l2 2 4-4"></path></svg>
+          SOC 2 Type II
+        </span>
+<span class="badge">
+<svg aria-hidden="true" fill="none" height="14" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="14"><path d="M3 12h4l3-8 4 16 3-8h4"></path></svg>
+          99.99% uptime
+        </span>
+</div>
+</div>
+</div>
+</footer>
+</body>
+</html>
