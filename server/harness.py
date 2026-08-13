@@ -329,6 +329,39 @@ async def build_page(user_prompt: str, plan_spec: Dict[str, Any], page: Dict[str
     return {"file": page.get("file", "index.html"), "html": cleaned}
 
 
+_CLASSIFY_SCHEMA: Dict[str, Any] = {
+    "type": "object",
+    "properties": {"page_type": {"type": "string", "enum": list(_PAGE_TYPES.keys())}},
+    "required": ["page_type"],
+}
+
+
+async def classify_page_type(prompt: str) -> str:
+    """Infer which page type the user is building, from their prompt (no picker needed)."""
+    names = list(_PAGE_TYPES.keys())
+    guide = "\n".join(f"- {n}: {_PAGE_TYPE_DESC.get(n, '')}" for n in names)
+    sys = ("You classify what kind of web page or app screen the user wants to build, so the "
+           "builder can choose the right layout. Choose the SINGLE best-fitting type.\n"
+           f"Allowed types:\n{guide}\n"
+           'Respond with JSON only: {"page_type": "<one of the exact type names above>"}.')
+    try:
+        out = await gpu.chat(
+            [{"role": "system", "content": sys},
+             {"role": "user", "content": f"Build request: {prompt}"}],
+            schema=_CLASSIFY_SCHEMA, temperature=0.0, num_predict=200)
+        pt = (json.loads(out) or {}).get("page_type", "").strip()
+    except Exception as e:
+        logger.warning("page-type classify failed: %s", e)
+        pt = ""
+    if pt in _PAGE_TYPES:
+        logger.info("inferred page type: %s", pt)
+        return pt
+    try:
+        return _match_section(_PAGE_TYPES, pt)[0]
+    except Exception:
+        return "Landing"
+
+
 async def build_project(prompt: str, page_type: str, style: str,
                         edit_pages: Optional[List[Dict[str, str]]] = None,
                         instruction: Optional[str] = None) -> Tuple[Dict[str, Any], List[Dict[str, str]]]:
@@ -337,8 +370,13 @@ async def build_project(prompt: str, page_type: str, style: str,
     When `edit_pages`/`instruction` are given (refine flow), the plan is asked to
     revise the existing pages per the instruction and each page is regenerated.
     """
-    page_type_name, structure_body = page_structure(page_type)
     style_name, style_body = style_directive(style)
+    # Resolve the page type: infer it from the prompt when the caller didn't pick one.
+    if not page_type or page_type.strip().lower() in ("auto", ""):
+        page_type_name, structure_body = page_structure(
+            await classify_page_type(prompt or instruction or ""))
+    else:
+        page_type_name, structure_body = page_structure(page_type)
 
     effective_prompt = prompt
     if instruction:
@@ -353,6 +391,7 @@ async def build_project(prompt: str, page_type: str, style: str,
 
     plan_spec = await plan(effective_prompt, page_type_name, style_name,
                            structure_body, style_body)
+    plan_spec["page_type"] = page_type_name   # surface the (possibly inferred) type
     pages_spec = plan_spec.get("pages") or [{"file": "index.html"}]
     page_list = [p.get("file", "index.html") for p in pages_spec]
 

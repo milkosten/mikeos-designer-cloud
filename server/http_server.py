@@ -66,7 +66,7 @@ app.add_middleware(
 # ---- request bodies -------------------------------------------------------
 class CreateBody(BaseModel):
     prompt: str = Field(..., min_length=1)
-    page_type: str
+    page_type: str = "auto"   # "auto" -> the GPU infers the page type from the prompt
     style: str
     title: Optional[str] = None
 
@@ -153,8 +153,9 @@ async def create_project(body: CreateBody, user_id: str = Depends(current_user_w
     _rate_check(user_id)
     # validate the pickers early -> 400 rather than a mid-pipeline failure
     try:
-        page_type_name, _ = harness.page_structure(body.page_type)
-        style_name, _ = harness.style_directive(body.style)
+        harness.style_directive(body.style)
+        if body.page_type and body.page_type.strip().lower() not in ("auto", ""):
+            harness.page_structure(body.page_type)   # validate only an explicit type
     except KeyError as e:
         raise HTTPException(status_code=400, detail=f"unknown page_type/style: {e}")
 
@@ -172,7 +173,7 @@ async def create_project(body: CreateBody, user_id: str = Depends(current_user_w
         "INSERT INTO projects (id, user_id, title, page_type, style, prompt, "
         " prompt_history, pages, visibility, published) "
         "VALUES ($1,$2,$3,$4,$5,$6,$7::jsonb,$8::jsonb,'unlisted',true) RETURNING *",
-        site_id, user_id, title, body.page_type, body.style, body.prompt,
+        site_id, user_id, title, plan_spec.get("page_type") or body.page_type, body.style, body.prompt,
         json.dumps([]), json.dumps(pages),
     )
     if not row:  # never-trust-200: verify the row actually landed
