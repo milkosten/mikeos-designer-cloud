@@ -1,11 +1,9 @@
 # mikeos-designer-cloud on 242 — the AI harness behind designer.osmike.com.
 #
-# App + its OWN Postgres, both on the shared caddy network (deploy_default). The
-# generated static sites are written to SITES_DIR, mounted from a host dir so Caddy
-# can serve them directly at designer.osmike.com/<id>/ (see DEPLOY.md). Project rows
-# (small metadata + pages jsonb) live in this service's Postgres; the DB is tiny, but
-# the host bind-mount for the sites lives on /data. Generation is GPU-bound (the shared
-# free Ollama), so this box does very little CPU work of its own.
+# App + its OWN Postgres + a small designer-web (caddy) that serves the SPA and the
+# generated static sites. All on the shared caddy network (deploy_default). The generated
+# static sites are written to SITES_DIR, mounted from a host dir so designer-web (and the
+# shared Caddy) can serve them at designer.osmike.com/<id>/ (see DEPLOY.md).
 services:
   mikeos-designer-db:
     image: postgres:18
@@ -54,6 +52,22 @@ services:
     networks: [deploy_default]
     mem_limit: 1g
     cpus: 2
+
+  # Serves the SPA (designer.osmike.com) + the generated /<id>/ sites. The shared Caddy
+  # reverse-proxies designer.osmike.com -> this container. See web-Caddyfile.
+  designer-web:
+    image: caddy:2
+    container_name: designer-web
+    restart: unless-stopped
+    depends_on:
+      - mikeos-designer
+    volumes:
+      - /opt/mikeos-designer-cloud/web-Caddyfile:/etc/caddy/Caddyfile:ro
+      - /opt/mikeos-designer:/srv/spa:ro
+      - /data/mikeos-designer/sites:/data/sites:ro
+    networks: [deploy_default]
+    mem_limit: 128m
+    cpus: 0.5
 
 networks:
   deploy_default:
