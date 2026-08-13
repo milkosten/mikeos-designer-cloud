@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>Pricing - Bloomboard</title>
+<meta content="Choose the plan that fits your team's workflow. Bloomboard offers flexible pricing options for creative teams." name="description"/>
+<style>
+    :root {
+      --bg: #fffefb;
+      --surface: #f7f9fa;
+      --ink: #2e2e2e;
+      --muted: #5a5a5a;
+      --line: #e0e0e0;
+      --accent: #ff6b6b;
+      --accent-2: #a8e6cf;
+      --step-0: 0.85rem;
+      --step-1: 1.05rem;
+      --step-2: 1.35rem;
+      --step-3: 1.9rem;
+      --step-4: 2.8rem;
+      --step-5: 4rem;
+      --s1: 4px;
+      --s2: 8px;
+      --s3: 16px;
+      --s4: 32px;
+      --s5: 64px;
+      --s6: 96px;
+      --radius: 28px;
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    html {
+      scroll-behavior: smooth;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      color-scheme: light dark;
+    }
+    body {
+      background-color: var(--bg);
+      color: var(--ink);
+      line-height: 1.6;
+      font-size: var(--step-1);
+      padding: var(--s4) var(--s3);
+    }
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+    a:hover, a:focus-visible {
+      color: var(--accent-2);
+      text-decoration: underline;
+    }
+    h1 {
+      font-size: var(--step-4);
+      font-weight: 600;
+      margin-bottom: var(--s2);
+    }
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+    }
+    .hero {
+      padding-block: var(--s5);
+      text-align: center;
+    }
+    .hero h1 {
+      font-size: var(--step-5);
+      margin-bottom: var(--s2);
+    }
+    .hero p {
+      font-size: var(--step-2);
+      color: var(--muted);
+    }
+    .plan-tiers {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: var(--s4);
+      padding-block: var(--s5);
+    }
+    .plan {
+      background-color: var(--surface);
+      border-radius: var(--radius);
+      padding: var(--s4) var(--s3);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+      transition: transform 0.2s ease;
+    }
+    .plan:hover {
+      transform: translateY(-2px);
+    }
+    .plan-name {
+      font-size: var(--step-3);
+      font-weight: 600;
+      margin-bottom: var(--s2);
+    }
+    .plan-price {
+      font-size: var(--step-4);
+      font-weight: 700;
+      margin-bottom: var(--s2);
+    }
+    .plan-bullet {
+      display: flex;
+      align-items: center;
+      margin-bottom: var(--s1);
+    }
+    .plan-bullet svg {
+      width: 18px;
+      height: 18px;
+      margin-right: var(--s1);
+      fill: var(--accent);
+    }
+    .plan-cta {
+      margin-top: var(--s3);
+    }
+    .plan-cta button {
+      padding: var(--s1) var(--s2);
+      font-size: var(--step-2);
+      background-color: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+    .plan-cta button:hover {
+      background-color: var(--accent-2);
+    }
+    .feature-comparison {
+      overflow-x: auto;
+      margin: var(--s5) 0;
+    }
+    .feature-comparison table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: var(--surface);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    }
+    .feature-comparison th, .feature-comparison td {
+      padding: var(--s2) var(--s3);
+      font-size: var(--step-1);
+      border-bottom: 1px solid var(--line);
+    }
+    .feature-comparison th {
+      background-color: var(--bg);
+    }
+    .feature-comparison tr:hover {
+      background-color: rgba(0,0,0,0.02);
+    }
+    .faq {
+      margin: var(--s5) 0;
+    }
+    .faq dt {
+      font-size: var(--step-2);
+      font-weight: 500;
+      margin-bottom: var(--s1);
+    }
+    .faq dd {
+      font-size: var(--step-1);
+      color: var(--muted);
+    }
+    .final-cta {
+      background-color: var(--accent);
+      color: white;
+      padding: var(--s4) var(--s3);
+      text-align: center;
+      margin: var(--s5) 0;
+      border-radius: var(--radius);
+    }
+    .final-cta button {
+      padding: var(--s1) var(--s2);
+      font-size: var(--step-2);
+      background-color: white;
+      color: var(--accent);
+      border: 2px solid white;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+    .final-cta button:hover {
+      background-color: rgba(255,255,255,0.1);
+    }
+    .footer {
+      padding: var(--s4) var(--s3);
+      text-align: center;
+      font-size: var(--step-1);
+      color: var(--muted);
+      border-top: 1px solid var(--line);
+    }
+    .footer a {
+      color: var(--accent);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .plan:hover {
+        transform: none;
+      }
+    }
+    @media (prefers-color-scheme: dark) {
+      body {
+        background-color: #0b0c0e;
+        color: #e0e0e0;
+      }
+      .plan {
+        background-color: #1e1e1e;
+      }
+      .final-cta {
+        background-color: #ff6b6b;
+      }
+      .final-cta button {
+        background-color: #1e1e1e;
+        color: var(--accent);
+      }
+    }
+  </style>
+</head>
+<body>
+<header class="container">
+<nav>
+<a href="index.html">Bloomboard</a>
+<a href="features.html">Features</a>
+<a href="pricing.html">Pricing</a>
+<a href="contact.html">Contact</a>
+</nav>
+</header>
+<main class="container">
+<section class="hero">
+<h1>Pricing for Bloomboard</h1>
+<p>Choose the plan that fits your team's workflow</p>
+</section>
+<section class="plan-tiers">
+<div aria-label="Starter (Recommended)" class="plan recommended">
+<div class="plan-name">Starter</div>
+<div class="plan-price">$9<span style="font-size: 0.8em;">/month</span></div>
+<div class="plan-bullet"><svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.94L20 3"></path></svg> Unlimited Boards</div>
+<div class="plan-bullet"><svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg> 5 Team Members</div>
+<div class="plan-bullet"><svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2h-2a2 2 0 00-2 2v7h-4v-7a6 6 0 016-6z"></path><circle cx="8.5" cy="8.5" r="1.5"></circle></svg> Priority Support</div>
+<div class="plan-cta">
+<button>Start Free Trial</button>
+</div>
+</div>
+<div aria-label="Pro" class="plan">
+<div class="plan-name">Pro</div>
+<div class="plan-price">$29<span style="font-size: 0.8em;">/month</span></div>
+<div class="plan-bullet"><svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.94L20 3"></path></svg> Unlimited Boards</div>
+<div class="plan-bullet"><svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg> 10 Team Members</div>
+<div class="plan-bullet"><svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2h-2a2 2 0 00-2 2v7h-4v-7a6 6 0 016-6z"></path><circle cx="8.5" cy="8.5" r="1.5"></circle></svg> Priority Support</div>
+<div class="plan-bullet"><svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg> Advanced Analytics</div>
+<div class="plan-cta">
+<button>Get Started</button>
+</div>
+</div>
+<div aria-label="Team" class="plan">
+<div class="plan-name">Team</div>
+<div class="plan-price">$49<span style="font-size: 0.8em;">/month</span></div>
+<div class="plan-bullet"><svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.94L20 3"></path></svg> Unlimited Boards</div>
+<div class="plan-bullet"><svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg> 15 Team Members</div>
+<div class="plan-bullet"><svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2h-2a2 2 0 00-2 2v7h-4v-7a6 6 0 016-6z"></path><circle cx="8.5" cy="8.5" r="1.5"></circle></svg> Priority Support</div>
+<div class="plan-bullet"><svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg> Advanced Analytics</div>
+<div class="plan-bullet"><svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg> Custom Branding</div>
+<div class="plan-cta">
+<button>Start Free Trial</button>
+</div>
+</div>
+</section>
+<section class="feature-comparison">
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Starter</th>
+<th>Pro</th>
+<th>Team</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Unlimited Boards</td>
+<td><svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.94L20 3"></path></svg></td>
+<td><svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.94L20 3"></path></svg></td>
+<td><svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.94L20 3"></path></svg></td>
+</tr>
+<tr>
+<td>Team Members</td>
+<td><svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg></td>
+<td><svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg></td>
+<td><svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg></td>
+</tr>
+<tr>
+<td>Priority Support</td>
+<td><svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2h-2a2 2 0 00-2 2v7h-4v-7a6 6 0 016-6z"></path><circle cx="8.5" cy="8.5" r="1.5"></circle></svg></td>
+<td><svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2h-2a2 2 0 00-2 2v7h-4v-7a6 6 0 016-6z"></path><circle cx="8.5" cy="8.5" r="1.5"></circle></svg></td>
+<td><svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2h-2a2 2 0 00-2 2v7h-4v-7a6 6 0 016-6z"></path><circle cx="8.5" cy="8.5" r="1.5"></circle></svg></td>
+</tr>
+<tr>
+<td>Advanced Analytics</td>
+<td><svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg></td>
+<td><svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg></td>
+<td><svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg></td>
+</tr>
+<tr>
+<td>Custom Branding</td>
+<td><svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg></td>
+<td><svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg></td>
+<td><svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section class="faq">
+<details>
+<summary><strong>What payment methods do you accept?</strong></summary>
+<p>We accept credit cards, PayPal, and bank transfers. All payments are processed securely through our payment gateway.</p>
+</details>
+<details>
+<summary><strong>Can I cancel my subscription anytime?</strong></summary>
+<p>Yes, you can cancel your subscription at any time. Your access will remain active until the end of your current billing cycle.</p>
+</details>
+<details>
+<summary><strong>Is there a refund policy?</strong></summary>
+<p>We offer a 30-day money-back guarantee. If you're not satisfied with Bloomboard within the first 30 days, you can request a full refund.</p>
+</details>
+</section>
+<section class="final-cta">
+<h2>Ready to Get Started?</h2>
+<p>Choose the plan that fits your team's workflow</p>
+<div class="plan-cta">
+<button>Start Free Trial</button>
+</div>
+</section>
+</main>
+<footer class="footer">
+<p>© 2023 Bloomboard. All rights reserved.</p>
+<p><a href="privacy.html">Privacy Policy</a> | <a href="terms.html">Terms of Service</a></p>
+</footer>
+</body>
+</html>

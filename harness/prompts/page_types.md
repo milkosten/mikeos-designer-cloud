@@ -1,75 +1,90 @@
 # Page-type structures (the `{{PAGE_STRUCTURE}}` library)
 
-Injected into the generation prompt as the required section skeleton for the chosen page
-type. The model fills each section with real, subject-specific content in the chosen style.
-Sections are the expected backbone — the model may add one tasteful extra section if the
-subject calls for it, but must cover these.
+Injected into the generation prompt as the required skeleton for the chosen page type.
+**Most outputs here are PRODUCT DESIGNS — real application UIs — not company homepages.**
+Build them like a working product screen: real navigation and chrome, realistic data and
+microcopy, visible component states, and small line-icons (NOT illustrations). The model
+fills each section with subject-specific content in the chosen style.
 
 ---
 
-## Landing
-1. **Header/nav** — logo (inline SVG wordmark), 3–5 nav links, one primary CTA button.
-2. **Hero** — the thesis: a strong headline (the value prop), a one-line subhead, primary +
-   secondary CTA, and a supporting inline-SVG visual/mockup. This is the focal moment.
-3. **Social proof** — a logo row (inline SVG marks) or a short credibility line.
-4. **Features** — 3–6 feature cards, each: inline-SVG icon, title, 1–2 line description.
-5. **How it works** — 3 numbered steps (numbers carry real meaning/sequence).
-6. **Highlight / secondary CTA band** — one standout benefit or a testimonial quote.
-7. **FAQ** — 3–5 Q&A (semantic `<details>`/`<summary>` allowed — that's CSS-only, no JS).
-8. **Footer** — columns of links, small print, inline-SVG social icons.
+## App Dashboard
+A data-dense product dashboard — the app's main screen. Build the real UI, not a marketing page.
+1. **App shell** — a left **sidebar** (product wordmark + small line-icon nav, one item active) and
+   a **top bar** (page title, a search field, and an avatar/menu). This is real app chrome.
+2. **Toolbar row** — page heading + a couple of controls (a segmented control / date-range /
+   primary button), so it reads as an operable screen.
+3. **KPI cards** — a row of 3–4 metric cards: label, big number, and a small delta with an up/down
+   line-arrow in semantic color (green/amber/red — separate from the brand accent).
+4. **Primary chart** — ONE real, hand-built **inline-SVG** chart (line/area/bar) with axis labels,
+   gridlines, and an emphasized endpoint/point. A real labelled chart — never a filled blob.
+5. **Data table** — a realistic table (wrap in `overflow-x:auto`) with a header row, ~5 rows of
+   plausible data, and **status pills**; include a hover row state.
+6. **Secondary panel** — an activity feed / list with items, timestamps, and small icons.
+Every panel shares one component system (radius, border, spacing, state treatments).
+
+## App Screen
+A functional application screen — e.g. a project board, an inbox, a task list/detail, a chat, a
+file browser, or an editor (pick what fits the subject). Design the working UI.
+1. **App shell** — sidebar/rail + top bar as above (product nav, active item, user menu).
+2. **Primary work area** — the actual feature: e.g. a **kanban** (3 columns of cards), an **inbox**
+   (list + reading pane), a **table/list** with rows, or an **editor** (toolbar + canvas). Use
+   realistic items and copy, not lorem.
+3. **Item components** — cards/rows/messages with real structure: title, meta, tags/labels, avatars
+   (initials in a circle, not photos), and small line-icon actions. Show at least one **hover** and
+   one **selected/active** state.
+4. **Right rail or detail** — a details/properties panel or a contextual sidebar for the selected item.
+5. **Empty / count affordances** — a section count, a subtle empty-state hint, or a "+ add" control,
+   so the screen feels alive and operable.
+Interaction is implied visually (no JS): make states legible through styling.
+
+## Settings
+A product settings / account screen.
+1. **App shell** — sidebar/top bar (as above), with "Settings" active.
+2. **Settings nav** — a secondary nav (tabs or a left list): Profile, Account, Notifications,
+   Billing, Security, etc. — one active.
+3. **Grouped form sections** — 2–4 cards, each a labelled group of real controls: text inputs with
+   labels + helper text, **toggles/switches** (pure-CSS look), selects, a segmented control, radio rows.
+   Style focus, checked, and disabled states.
+4. **A destructive/danger zone** — a clearly-differentiated section (e.g. delete account) with a
+   secondary/danger button.
+5. **Save bar** — a footer or inline actions (Save / Cancel) with clear primary vs secondary buttons.
+Realistic labels and helper microcopy throughout; this must read like a real settings page.
+
+## Onboarding
+A signup / login / onboarding flow screen (a single screen of the flow).
+1. **Split or centered layout** — a focused auth/onboarding card on one side and a **product value
+   panel** (a short pitch + a small framed UI preview or feature list) on the other; or a clean
+   centered card.
+2. **The form** — real fields (email, password, or profile/setup inputs) with labels, helper text,
+   visible focus states, a primary CTA, and secondary options (SSO buttons as line-icon+label, "or
+   continue with", a link to switch login/signup). No JS — it's a styled mockup.
+3. **Progress** — if it's multi-step onboarding, a step indicator (1–2–3) showing where the user is.
+4. **Trust/footer** — small print, links, a reassurance line.
+Make it feel premium and effortless — generous spacing, one clear primary action.
 
 ## Pricing
-1. **Header/nav.**
-2. **Title block** — page heading + a one-line framing of the pricing.
-3. **Plan tiers** — 3 tiers in a grid (e.g. Starter / Pro / Team). Each: name, price with
-   period, short blurb, feature list with inline-SVG checks, a CTA. Mark ONE tier as
-   "recommended" with a subtle highlight (border/scale), not a garish banner.
-4. **Feature comparison** — a table of features × plans (wrap in `overflow-x:auto`).
-5. **FAQ** — billing/plan questions (`<details>` ok).
-6. **Final CTA band.**
-7. **Footer.**
-Prices and features must be concrete and plausible for the subject.
-
-## Portfolio
-1. **Header/nav** — name/wordmark + minimal nav (Work, About, Contact).
-2. **Intro/hero** — who this is and what they do, one strong line + brief positioning.
-3. **Selected work** — a grid/list of 3–6 projects, each: inline-SVG thumbnail/cover, title,
-   role/medium, year, a one-line description. Hover state reveals detail.
-4. **About** — a short bio paragraph + a few skills/tools as tasteful chips.
-5. **Contact** — email/links (plain `mailto:` + inline-SVG social icons). No JS form logic.
+A product pricing page.
+1. **Header** — product wordmark + minimal nav (or the app top bar).
+2. **Title block** — heading + a one-line framing; optional monthly/annual segmented toggle (styled).
+3. **Plan tiers** — 3 tiers in a grid (e.g. Starter / Pro / Team): name, price + period, blurb, a
+   feature list with small line-icon checks, and a CTA. Mark ONE tier "recommended" with a subtle
+   highlight (border/scale), not a garish banner.
+4. **Comparison table** — features × plans (wrap in `overflow-x:auto`); use small **check / dash**
+   line-icons per cell — never large or random glyphs.
+5. **FAQ** — 3–5 billing questions (`<details>`/`<summary>` allowed — CSS only, no JS).
 6. **Footer.**
-Content should feel like a real person/studio with a point of view.
+Prices and features must be concrete and plausible for the product.
 
-## Blog post
-1. **Header/nav** — publication/site wordmark + minimal nav.
-2. **Article header** — kicker/category, `<h1>` title, deck/standfirst, byline + date +
-   read-time.
-3. **Article body** — a real, well-structured long-form article: intro (drop-cap if
-   editorial), multiple `<h2>`/`<h3>` sections, paragraphs, a blockquote/pull-quote, a list,
-   and one inline-SVG figure with a `<figcaption>`. Comfortable measure and rhythm.
-4. **Author card** — small bio + links.
-5. **Related reading** — 2–3 linked cards.
-6. **Footer.**
-Write genuine article prose about the requested topic — not a description of an article.
-
-## Coming-soon
-1. **Centered single-viewport hero** — wordmark, a compelling headline, one line of context.
-2. **Email capture** — an email input + button, visually complete (styled, focus states).
-   Pure presentation — no JS; the form can `action="#"` (note it's a mockup).
-3. **Accent atmosphere** — a distinctive inline-SVG/CSS backdrop (gradient, shapes, grid)
-   fitting the style; this page leans on mood.
-4. **Small footer** — launch timeframe + inline-SVG social links.
-Keep it to one screen where possible; make it feel anticipatory and premium.
-
-## Dashboard mockup
-1. **App shell** — left sidebar (inline-SVG nav icons + labels, one active) + top bar (page
-   title, search field mockup, avatar).
-2. **Stat cards** — a row of 3–4 KPI cards: label, big number, a small delta with an
-   up/down inline-SVG arrow and semantic color (green/amber/red — separate from the accent).
-3. **Primary chart** — a hand-built **inline-SVG** chart (line/area/bar) with axis labels,
-   gridlines, and an emphasized data point/endpoint. No chart library, no JS.
-4. **Secondary panels** — a data table (`overflow-x:auto`) and/or a list/activity feed with
-   status pills.
-5. **Consistent component system** — shared radius, spacing, border, and state treatments
-   across every panel; state encoded in form (pills/chips), not just color.
-Purely visual (no interactivity), but must read like a real, coherent product UI.
+## Landing
+A PRODUCT landing page (still product-first — show the product, don't just sell).
+1. **Header/nav** — wordmark, a few links, a primary CTA.
+2. **Hero** — a strong **typographic** headline (the value prop) + subhead + primary/secondary CTA,
+   and a **framed product UI preview** (a small mock of the app built from real HTML/CSS — a card,
+   a mini dashboard, a window chrome — NOT an illustration blob).
+3. **Feature highlights** — 3–4 features, each with a small line-icon, title, and one line.
+4. **A product detail band** — a larger feature shown with a small UI mock or a benefit + supporting
+   points.
+5. **Social proof** — a logo row (simple wordmarks) or a short testimonial.
+6. **CTA band** + **footer** (real links, small print).
+The hero visual is a framed UI preview or pure type — never a decorative illustration.

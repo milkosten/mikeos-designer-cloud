@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>Forgewright - Pipeline Dashboard</title>
+<meta content="Self-hosted CI/CD for developers who build things" name="description"/>
+<style>
+    :root {
+      --bg: #0b0e0f;
+      --surface: #14181a;
+      --ink: #e6edf0;
+      --muted: #8a97a0;
+      --line: #232a2d;
+      --accent: #00e08a;
+      --accent-2: #4ea1ff;
+      --step-0: 0.85rem;
+      --step-1: 1.05rem;
+      --step-2: 1.35rem;
+      --step-3: 1.9rem;
+      --step-4: 2.8rem;
+      --step-5: 4rem;
+      --s1: 4px;
+      --s2: 8px;
+      --s3: 16px;
+      --s4: 32px;
+      --s5: 64px;
+      --s6: 96px;
+      --radius: 0.3rem;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    html {
+      font-family: ui-monospace, "SF Mono", "Cascadia Code", Menlo, monospace;
+      color: var(--ink);
+      background-color: var(--bg);
+      scroll-behavior: smooth;
+    }
+    body {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      font-size: var(--step-1);
+      line-height: 1.5;
+      max-width: 1200px;
+      margin: auto;
+    }
+    header {
+      display: flex;
+      align-items: center;
+      gap: var(--s3);
+      padding: var(--s3) var(--s4);
+      background-color: var(--surface);
+      border-bottom: 1px solid var(--line);
+    }
+    .logo {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      font-weight: bold;
+      font-size: 1.25rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .nav-icon {
+      width: 20px;
+      height: 20px;
+      fill: var(--ink);
+    }
+    .title {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      font-weight: normal;
+      font-size: var(--step-2);
+      color: var(--ink);
+    }
+    .search {
+      flex: 1;
+      margin-left: var(--s2);
+      background-color: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: var(--s1) var(--s2);
+      font-size: var(--step-0);
+    }
+    .user {
+      display: flex;
+      align-items: center;
+      gap: var(--s2);
+      font-size: var(--step-0);
+      color: var(--muted);
+    }
+    .user svg {
+      width: 20px;
+      height: 20px;
+      fill: var(--muted);
+    }
+    main {
+      flex: 1;
+      padding: var(--s4) var(--s3);
+      display: flex;
+      flex-direction: column;
+      gap: var(--s4);
+    }
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: var(--s3);
+      font-size: var(--step-0);
+      color: var(--muted);
+    }
+    .toolbar h2 {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      font-weight: 600;
+      font-size: var(--step-2);
+      color: var(--ink);
+    }
+    .segmented {
+      display: flex;
+      gap: var(--s2);
+      background-color: var(--surface);
+      padding: var(--s1) var(--s2);
+      border-radius: var(--radius);
+      font-size: var(--step-0);
+      color: var(--muted);
+    }
+    .segmented button {
+      background: none;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: var(--s1) var(--s2);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .segmented button:hover {
+      background-color: var(--surface);
+      border-color: var(--accent);
+    }
+    .segmented button.active {
+      background-color: var(--accent);
+      color: var(--bg);
+    }
+    .primary-btn {
+      padding: var(--s1) var(--s2);
+      background-color: var(--accent);
+      color: var(--bg);
+      border: 1px solid var(--accent);
+      border-radius: var(--radius);
+      font-size: var(--step-0);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .primary-btn:hover {
+      background-color: var(--accent-2);
+      border-color: var(--accent-2);
+    }
+    .kpi-cards {
+      display: flex;
+      gap: var(--s4);
+      flex-wrap: wrap;
+      justify-content: space-between;
+    }
+    .card {
+      background-color: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: var(--s3);
+      display: flex;
+      flex-direction: column;
+      gap: var(--s2);
+      font-size: var(--step-0);
+      color: var(--muted);
+    }
+    .card h3 {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      font-weight: 600;
+      font-size: var(--step-1);
+      color: var(--ink);
+    }
+    .card .number {
+      font-size: var(--step-3);
+      font-weight: bold;
+      color: var(--ink);
+    }
+    .card .delta {
+      font-size: var(--step-1);
+      color: var(--accent);
+    }
+    .card .delta.down {
+      color: #ff6666;
+    }
+    .card .delta.up {
+      color: #ffb02e;
+    }
+    .chart-container {
+      background-color: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: var(--s3);
+      font-size: var(--step-0);
+      color: var(--muted);
+    }
+    .chart {
+      width: 100%;
+      height: 200px;
+      background: linear-gradient(to bottom, var(--surface) 50%, #1a2026 50%);
+      position: relative;
+    }
+    .chart-grid {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+    .chart-grid line {
+      stroke: var(--line);
+      stroke-width: 1;
+    }
+    .chart-axis {
+      fill: var(--muted);
+      font-size: var(--step-0);
+    }
+    .chart-axis .x {
+      text-anchor: middle;
+    }
+    .chart-axis .y {
+      text-anchor: end;
+    }
+    .chart-line {
+      fill: none;
+      stroke: var(--accent);
+      stroke-width: 2;
+    }
+    .chart-point {
+      fill: var(--accent);
+    }
+    .data-table {
+      overflow-x: auto;
+      background-color: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: var(--s3);
+      font-size: var(--step-0);
+      color: var(--muted);
+    }
+    .data-table th {
+      background-color: var(--surface);
+      border-bottom: 1px solid var(--line);
+      font-weight: bold;
+    }
+    .data-table tr {
+      transition: all 0.2s;
+    }
+    .data-table tr:hover {
+      background-color: var(--surface);
+      box-shadow: 0 0 4px var(--line);
+    }
+    .data-table td {
+      padding: var(--s1) var(--s2);
+      border-bottom: 1px solid var(--line);
+    }
+    .status-pill {
+      padding: var(--s1) var(--s2);
+      border-radius: var(--radius);
+      font-size: var(--step-0);
+      color: var(--bg);
+    }
+    .status-pill.success {
+      background-color: var(--accent);
+    }
+    .status-pill.failed {
+      background-color: #ff6666;
+    }
+    .status-pill.pending {
+      background-color: #ffb02e;
+    }
+    .secondary-panel {
+      background-color: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: var(--s3);
+      font-size: var(--step-0);
+      color: var(--muted);
+    }
+    .activity-item {
+      display: flex;
+      align-items: center;
+      gap: var(--s2);
+      padding: var(--s1) var(--s2);
+      border-bottom: 1px solid var(--line);
+    }
+    .activity-icon {
+      width: 16px;
+      height: 16px;
+      fill: var(--muted);
+    }
+    .activity-time {
+      font-size: var(--step-0);
+      color: var(--muted);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .data-table tr:hover {
+        background-color: var(--surface);
+        box-shadow: none;
+      }
+    }
+    @media (prefers-color-scheme: light) {
+      html {
+        background-color: #fff;
+        color: #000;
+      }
+      .logo {
+        color: #000;
+      }
+      .title {
+        color: #000;
+      }
+      .search {
+        background-color: #fff;
+        border-color: #ccc;
+        color: #000;
+      }
+      .user {
+        color: #000;
+      }
+      .card {
+        background-color: #fff;
+        border-color: #ccc;
+      }
+      .card h3 {
+        color: #000;
+      }
+      .card .number {
+        color: #000;
+      }
+      .chart-container {
+        background-color: #fff;
+        border-color: #ccc;
+      }
+      .chart {
+        background: linear-gradient(to bottom, #fff 50%, #f5f5f5 50%);
+      }
+      .data-table {
+        background-color: #fff;
+        border-color: #ccc;
+      }
+      .secondary-panel {
+        background-color: #fff;
+        border-color: #ccc;
+      }
+      .activity-icon {
+        fill: #000;
+      }
+    }
+  </style>
+</head>
+<body>
+<header>
+<div class="logo">Forgewright</div>
+<svg class="nav-icon" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewbox="0 0 24 24">
+<path d="M3 9h18M9 3v18"></path>
+</svg>
+<div class="title">Pipeline Dashboard</div>
+<input class="search" placeholder="Search pipelines..." type="text"/>
+<div class="user">
+<svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewbox="0 0 24 24">
+<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+<circle cx="12" cy="7" r="4"></circle>
+</svg>
+<span>Admin</span>
+</div>
+</header>
+<main>
+<div class="toolbar">
+<h2>Pipeline Dashboard</h2>
+<div class="segmented">
+<button class="active">Today</button>
+<button>This Week</button>
+<button>All Time</button>
+</div>
+<button class="primary-btn">Refresh Data</button>
+</div>
+<div class="kpi-cards">
+<div class="card">
+<h3>Build Success Rate</h3>
+<div class="number">92.4%</div>
+<div class="delta down">-1.2%</div>
+</div>
+<div class="card">
+<h3>Average Build Duration</h3>
+<div class="number">3.2 min</div>
+<div class="delta up">+0.5 min</div>
+</div>
+<div class="card">
+<h3>Total Pipeline Runs</h3>
+<div class="number">1,245</div>
+<div class="delta">+125</div>
+</div>
+</div>
+<div class="chart-container">
+<svg class="chart" viewbox="0 0 800 200">
+<g class="chart-grid">
+<line x1="0" x2="800" y1="180" y2="180"></line>
+<line x1="0" x2="800" y1="160" y2="160"></line>
+<line x1="0" x2="800" y1="140" y2="140"></line>
+<line x1="0" x2="800" y1="120" y2="120"></line>
+<line x1="0" x2="800" y1="100" y2="100"></line>
+<line x1="0" x2="800" y1="80" y2="80"></line>
+<line x1="0" x2="800" y1="60" y2="60"></line>
+<line x1="0" x2="800" y1="40" y2="40"></line>
+<line x1="0" x2="800" y1="20" y2="20"></line>
+<line x1="0" x2="800" y1="0" y2="0"></line>
+</g>
+<g class="chart-axis">
+<text class="x" x="0" y="195">Jan</text>
+<text class="x" x="160" y="195">Feb</text>
+<text class="x" x="320" y="195">Mar</text>
+<text class="x" x="480" y="195">Apr</text>
+<text class="x" x="640" y="195">May</text>
+<text class="x" x="800" y="195">Jun</text>
+<text class="y" x="0" y="20">0%</text>
+<text class="y" x="0" y="40">20%</text>
+<text class="y" x="0" y="60">40%</text>
+<text class="y" x="0" y="80">60%</text>
+<text class="y" x="0" y="100">80%</text>
+<text class="y" x="0" y="120">100%</text>
+</g>
+<path class="chart-line" d="M0,180 L80,140 L160,120 L240,100 L320,80 L400,60 L480,40 L560,20 L640,100 L720,120 L800,140"></path>
+<circle class="chart-point" cx="0" cy="180" r="4"></circle>
+<circle class="chart-point" cx="80" cy="140" r="4"></circle>
+<circle class="chart-point" cx="160" cy="120" r="4"></circle>
+<circle class="chart-point" cx="240" cy="100" r="4"></circle>
+<circle class="chart-point" cx="320" cy="80" r="4"></circle>
+<circle class="chart-point" cx="400" cy="60" r="4"></circle>
+<circle class="chart-point" cx="480" cy="40" r="4"></circle>
+<circle class="chart-point" cx="560" cy="20" r="4"></circle>
+<circle class="chart-point" cx="640" cy="100" r="4"></circle>
+<circle class="chart-point" cx="720" cy="120" r="4"></circle>
+<circle class="chart-point" cx="800" cy="140" r="4"></circle>
+</svg>
+</div>
+<div class="data-table">
+<table>
+<thead>
+<tr>
+<th>Build ID</th>
+<th>Status</th>
+<th>Duration</th>
+<th>Branch</th>
+<th>Started At</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>BR-2024-04-05-12</td>
+<td><span class="status-pill success">Success</span></td>
+<td>3.2 min</td>
+<td>main</td>
+<td>2024-04-05 12:00</td>
+</tr>
+<tr>
+<td>BR-2024-04-05-11</td>
+<td><span class="status-pill failed">Failed</span></td>
+<td>4.1 min</td>
+<td>dev</td>
+<td>2024-04-05 11:30</td>
+</tr>
+<tr>
+<td>BR-2024-04-05-10</td>
+<td><span class="status-pill pending">Pending</span></td>
+<td>0.5 min</td>
+<td>feature</td>
+<td>2024-04-05 11:00</td>
+</tr>
+<tr>
+<td>BR-2024-04-05-09</td>
+<td><span class="status-pill success">Success</span></td>
+<td>2.8 min</td>
+<td>main</td>
+<td>2024-04-05 10:30</td>
+</tr>
+<tr>
+<td>BR-2024-04-05-08</td>
+<td><span class="status-pill failed">Failed</span></td>
+<td>3.7 min</td>
+<td>dev</td>
+<td>2024-04-05 10:00</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="secondary-panel">
+<div class="activity-item">
+<svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewbox="0 0 24 24">
+<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+<circle cx="12" cy="7" r="4"></circle>
+</svg>
+<div>
+<div class="activity-time">2024-04-05 12:00</div>
+<div>Pipeline BR-2024-04-05-12 completed successfully</div>
+</div>
+</div>
+<div class="activity-item">
+<svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewbox="0 0 24 24">
+<path d="M12 20l-7-7 7-7"></path>
+<path d="M16 12h-4"></path>
+</svg>
+<div>
+<div class="activity-time">2024-04-05 11:30</div>
+<div>Branch main merged into dev</div>
+</div>
+</div>
+<div class="activity-item">
+<svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewbox="0 0 24 24">
+<path d="M12 20l-7-7 7-7"></path>
+<path d="M16 12h-4"></path>
+</svg>
+<div>
+<div class="activity-time">2024-04-05 11:00</div>
+<div>Build BR-2024-04-05-11 failed at step 3</div>
+</div>
+</div>
+</div>
+</main>
+</body>
+</html>

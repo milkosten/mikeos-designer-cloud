@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>Forgewright - Self-hosted CI/CD for engineering teams</title>
+<meta content="Build, test, and deploy with confidence. Forgewright is an open-source self-hosted CI/CD pipeline runner designed for engineering teams who need control, reliability, and performance." name="description"/>
+<style>
+    :root{
+      --bg:#0b0e0f;
+      --surface:#14181a;
+      --ink:#e6edf0;
+      --muted:#8a97a0;
+      --line:#232a2d;
+      --accent:#00e08a;
+      --accent-2:#4ea1ff;
+      --step-0:0.85rem;
+      --step-1:1.05rem;
+      --step-2:1.35rem;
+      --step-3:1.9rem;
+      --step-4:2.8rem;
+      --step-5:4rem;
+      --s1:4px;
+      --s2:8px;
+      --s3:16px;
+      --s4:32px;
+      --s5:64px;
+      --s6:96px;
+      --radius:0.35rem;
+    }
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    html {
+      scroll-behavior: smooth;
+      font-family: ui-monospace, "SF Mono", "Cascadia Code", Menlo, monospace;
+      color-scheme: dark;
+    }
+    body {
+      background-color: var(--bg);
+      color: var(--ink);
+      font-size: var(--step-1);
+      line-height: 1.5;
+      max-width: 860px;
+      margin: 0 auto;
+      padding: var(--s4) var(--s3);
+      counter-reset: section;
+    }
+    a {
+      color: var(--accent);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    a:hover,
+    a:focus-visible {
+      color: var(--accent-2);
+    }
+    h1 {
+      font-size: var(--step-3);
+      font-weight: 600;
+      margin-bottom: var(--s2);
+    }
+    h2 {
+      font-size: var(--step-2);
+      font-weight: 500;
+      margin-bottom: var(--s2);
+    }
+    section {
+      counter-increment: section;
+      padding-block: clamp(3.5rem, 8vw, 7rem);
+      border-bottom: 1px solid var(--line);
+    }
+    .hero {
+      background-color: var(--surface);
+      padding: var(--s4) var(--s3);
+      border-radius: var(--radius);
+      box-shadow: 0 0 12px var(--line);
+    }
+    .hero .visual {
+      width: 100%;
+      height: auto;
+      border-radius: var(--radius);
+      box-shadow: 0 0 12px var(--line);
+    }
+    .hero .visual svg {
+      width: 100%;
+      height: auto;
+    }
+    .hero .content {
+      margin-top: var(--s3);
+    }
+    .hero .content h1 {
+      font-size: var(--step-4);
+      margin-bottom: var(--s1);
+    }
+    .hero .content p {
+      font-size: var(--step-1);
+      margin-bottom: var(--s3);
+    }
+    .hero .cta {
+      display: flex;
+      gap: var(--s3);
+      margin-top: var(--s3);
+    }
+    .hero .cta button {
+      padding: var(--s2) var(--s3);
+      font-size: var(--step-1);
+      font-weight: 500;
+      border: 1px solid var(--accent);
+      background-color: transparent;
+      color: var(--accent);
+      cursor: pointer;
+      transition: background-color 0.2s, color 0.2s;
+    }
+    .hero .cta button:hover,
+    .hero .cta button:focus-visible {
+      background-color: var(--accent);
+      color: var(--bg);
+    }
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: var(--s3);
+    }
+    .feature {
+      background-color: var(--surface);
+      padding: var(--s3);
+      border-radius: var(--radius);
+      box-shadow: 0 0 12px var(--line);
+    }
+    .feature svg {
+      width: 24px;
+      height: 24px;
+      fill: currentColor;
+    }
+    .how-it-works {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: var(--s3);
+    }
+    .how-it-works .step {
+      background-color: var(--surface);
+      padding: var(--s3);
+      border-radius: var(--radius);
+      box-shadow: 0 0 12px var(--line);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--s2);
+    }
+    .how-it-works .step .number {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--accent);
+    }
+    .how-it-works .step .label {
+      font-size: var(--step-1);
+      font-weight: 500;
+      color: var(--ink);
+    }
+    .how-it-works .step .description {
+      font-size: var(--step-0);
+      color: var(--muted);
+      text-align: center;
+    }
+    .highlight {
+      background-color: var(--surface);
+      padding: var(--s4) var(--s3);
+      border-radius: var(--radius);
+      box-shadow: 0 0 12px var(--line);
+      margin: var(--s4) 0;
+    }
+    .highlight .quote {
+      font-size: var(--step-2);
+      font-style: italic;
+      color: var(--ink);
+      margin-bottom: var(--s2);
+    }
+    .highlight .author {
+      font-size: var(--step-0);
+      color: var(--muted);
+      text-align: right;
+    }
+    .faq {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: var(--s3);
+    }
+    .faq .question {
+      background-color: var(--surface);
+      padding: var(--s3);
+      border-radius: var(--radius);
+      box-shadow: 0 0 12px var(--line);
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    .faq .question:hover {
+      background-color: var(--accent);
+    }
+    .faq .question.open {
+      background-color: var(--accent);
+    }
+    .faq .question .label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: var(--step-1);
+      font-weight: 500;
+      color: var(--ink);
+    }
+    .faq .question .label svg {
+      width: 24px;
+      height: 24px;
+      fill: currentColor;
+    }
+    .faq .question .content {
+      font-size: var(--step-0);
+      color: var(--muted);
+      padding-top: var(--s2);
+      display: none;
+    }
+    .faq .question.open .content {
+      display: block;
+    }
+    footer {
+      background-color: var(--surface);
+      padding: var(--s4) var(--s3);
+      border-radius: var(--radius);
+      box-shadow: 0 0 12px var(--line);
+    }
+    footer .links {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: var(--s3);
+    }
+    footer .links a {
+      color: var(--ink);
+      text-decoration: none;
+    }
+    footer .links a:hover {
+      color: var(--accent);
+    }
+    footer .copyright {
+      font-size: var(--step-0);
+      color: var(--muted);
+      margin-top: var(--s3);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .hero .cta button {
+        transition: none;
+      }
+    }
+    @media (prefers-color-scheme: light) {
+      body {
+        background-color: #f5f5f5;
+        color: #333;
+      }
+      .hero {
+        background-color: #fff;
+        box-shadow: 0 0 12px #ccc;
+      }
+      .hero .visual,
+      .hero .visual svg {
+        border: 1px solid #ccc;
+      }
+      .features .feature,
+      .how-it-works .step,
+      .highlight,
+      footer {
+        background-color: #fff;
+        box-shadow: 0 0 12px #ccc;
+      }
+    }
+    @media (max-width: 600px) {
+      body {
+        padding: var(--s3) 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+<header>
+<nav>
+<a aria-label="Forgewright home" href="#">
+<svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24">
+<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"></path>
+<path d="M12 21v-1"></path>
+<path d="M12 12h-1"></path>
+<path d="M12 12h1"></path>
+</svg>
+</a>
+<div class="nav-links">
+<a href="#features">Features</a>
+<a href="#how-it-works">How it works</a>
+<a href="#faq">FAQ</a>
+<a href="#" rel="noopener noreferrer" target="_blank">GitHub</a>
+</div>
+<button class="cta-button">Get started</button>
+</nav>
+</header>
+<section class="hero" id="hero">
+<div class="content">
+<h1>Build, test, and deploy with confidence</h1>
+<p>Forgewright is an open-source self-hosted CI/CD pipeline runner designed for engineering teams who need control, reliability, and performance.</p>
+<div class="cta">
+<button class="cta-button">Get started</button>
+<button class="cta-button secondary">See pricing</button>
+</div>
+</div>
+<div class="visual">
+<svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24">
+<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"></path>
+<path d="M12 21v-1"></path>
+<path d="M12 12h-1"></path>
+<path d="M12 12h1"></path>
+</svg>
+</div>
+</section>
+<section id="features">
+<h2>Key Features</h2>
+<div class="features">
+<div class="feature">
+<svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24">
+<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"></path>
+<path d="M12 21v-1"></path>
+<path d="M12 12h-1"></path>
+<path d="M12 12h1"></path>
+</svg>
+<h3>Self-hosted CI/CD</h3>
+<p>Run your pipelines anywhere, with full control over your infrastructure and data.</p>
+</div>
+<div class="feature">
+<svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24">
+<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"></path>
+<path d="M12 21v-1"></path>
+<path d="M12 12h-1"></path>
+<path d="M12 12h1"></path>
+</svg>
+<h3>Open-source &amp; customizable</h3>
+<p>Open-source code with a modular architecture that can be extended to fit your team's needs.</p>
+</div>
+<div class="feature">
+<svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24">
+<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"></path>
+<path d="M12 21v-1"></path>
+<path d="M12 12h-1"></path>
+<path d="M12 12h1"></path>
+</svg>
+<h3>High performance</h3>
+<p>Optimized for fast builds and reliable execution, with support for parallel processing and distributed runs.</p>
+</div>
+</div>
+</section>
+<section id="how-it-works">
+<h2>How it works</h2>
+<div class="how-it-works">
+<div class="step">
+<div class="number">1</div>
+<div class="label">Define your pipeline</div>
+<div class="description">Write a YAML file to define your build, test, and deployment steps.</div>
+</div>
+<div class="step">
+<div class="number">2</div>
+<div class="label">Run your pipeline</div>
+<div class="description">Trigger your pipeline from your code repository or via the CLI.</div>
+</div>
+<div class="step">
+<div class="number">3</div>
+<div class="label">Monitor and optimize</div>
+<div class="description">View real-time progress, logs, and performance metrics for each job.</div>
+</div>
+</div>
+</section>
+<section class="highlight" id="highlight">
+<div class="quote">"Forgewright has completely transformed our CI/CD pipeline. We've cut our deployment time in half and have full control over our infrastructure."</div>
+<div class="author">- Alex Chen, Engineering Lead at TechCorp</div>
+</section>
+<section id="faq">
+<h2>FAQ</h2>
+<div class="faq">
+<div class="question">
+<div class="label">
+<span>What is Forgewright?</span>
+<svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24">
+<path d="M19 9l-7 7-7-7"></path>
+</svg>
+</div>
+<div class="content">Forgewright is an open-source self-hosted CI/CD pipeline runner designed for engineering teams who need control, reliability, and performance.</div>
+</div>
+<div class="question">
+<div class="label">
+<span>Is Forgewright free to use?</span>
+<svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24">
+<path d="M19 9l-7 7-7-7"></path>
+</svg>
+</div>
+<div class="content">Yes, Forgewright is open-source and free to use. You can host it on your own infrastructure or use our hosted version.</div>
+</div>
+<div class="question">
+<div class="label">
+<span>Can I customize Forgewright?</span>
+<svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24">
+<path d="M19 9l-7 7-7-7"></path>
+</svg>
+</div>
+<div class="content">Absolutely. Forgewright is designed to be highly customizable with a modular architecture that supports custom plugins and integrations.</div>
+</div>
+</div>
+</section>
+<footer>
+<div class="links">
+<a href="#">Home</a>
+<a href="#features">Features</a>
+<a href="#how-it-works">How it works</a>
+<a href="#faq">FAQ</a>
+<a href="#" rel="noopener noreferrer" target="_blank">GitHub</a>
+</div>
+<div class="copyright">© 2023 Forgewright. All rights reserved.</div>
+</footer>
+</body>
+</html>

@@ -1,0 +1,52 @@
+{
+  "brand": {
+    "name": "North Meridian",
+    "tagline": "Small-batch specialty coffee roasting with Portland roots",
+    "tone": "Cultivated, understated, and artisanal"
+  },
+  "pages": [
+    {
+      "file": "index.html",
+      "title": "North Meridian \u2014 Small-batch specialty coffee roasting",
+      "sections": [
+        {
+          "id": "hero",
+          "purpose": "Thesis and value proposition",
+          "copy": "We roast small batches of single-origin specialty coffee in Portland, Oregon. Each cup is crafted with care, from bean to brew. Discover the richness of coffee made by hand."
+        },
+        {
+          "id": "social-proof",
+          "purpose": "Credibility and community",
+          "copy": "Featured in Portland Monthly, The Oregonian, and The Coffee Bean & Tea Leaf"
+        },
+        {
+          "id": "features",
+          "purpose": "Key offerings and values",
+          "copy": "Inline SVG icons: hand-picked beans, small-batch roasting, Portland-based, direct trade, third-wave coffee, and sustainable packaging"
+        },
+        {
+          "id": "how-it-works",
+          "purpose": "Process and sequence",
+          "copy": "1. Source beans directly from small farms. 2. Roast in small batches to preserve flavor. 3. Deliver fresh coffee to your door."
+        },
+        {
+          "id": "highlight",
+          "purpose": "Standout benefit or quote",
+          "copy": "\u2018North Meridian\u2019s coffee is a revelation \u2014 it tastes like the mountains where it was grown.\u2019 \u2014 Portland Coffee Club"
+        },
+        {
+          "id": "faq",
+          "purpose": "Common questions and answers",
+          "copy": "1. What beans do you source? <details> <summary>Click to see</summary> We source single-origin beans from small farms in Colombia, Ethiopia, and Guatemala.</details>\n2. How do you roast your beans? <details> <summary>Click to see</summary> We use a small-batch roaster to ensure each batch is roasted to perfection.</details>\n3. Do you offer subscriptions? <details> <summary>Click to see</summary> Yes, we offer monthly subscription options for coffee lovers.</details>"
+        },
+        {
+          "id": "footer",
+          "purpose": "Contact and links",
+          "copy": "Contact: info@northmeridian.com | Follow us: inline SVG social icons | \u00a9 2025 North Meridian"
+        }
+      ]
+    }
+  ],
+  "palette_hint": "Paper #fbfaf7, rich ink #20201d, oxblood accent #7a1f1f, hairline rules #dcd8cf",
+  "type_hint": "Serif system (Georgia/ui-serif), drop-cap on lead paragraph, italic pull-quotes, small-caps bylines, generous measure, print-influenced layout"
+}

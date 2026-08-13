@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>North Meridian — Small-batch specialty coffee roasting</title>
+<meta content="We roast small batches of single-origin specialty coffee in Portland, Oregon. Each cup is crafted with care, from bean to brew. Discover the richness of coffee made by hand." name="description"/>
+<style>
+    :root {
+      --bg: #fbfaf7;
+      --surface: #fff;
+      --ink: #20201d;
+      --muted: #a9a59e;
+      --line: #dcd8cf;
+      --accent: #7a1f1f;
+      --accent-2: #1f3a5f;
+      --step-0: 0.85rem;
+      --step-1: 1.05rem;
+      --step-2: 1.35rem;
+      --step-3: 1.9rem;
+      --step-4: 2.8rem;
+      --step-5: 4rem;
+      --s1: 4px;
+      --s2: 8px;
+      --s3: 16px;
+      --s4: 32px;
+      --s5: 64px;
+      --s6: 96px;
+      --radius: 0.3rem;
+    }
+    /* Reset */
+    html {
+      scroll-behavior: smooth;
+      font-family: Georgia, "Times New Roman", ui-serif, serif;
+      color: var(--ink);
+      background-color: var(--bg);
+      line-height: 1.6;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-size: var(--step-1);
+      max-width: 90ch;
+      margin: 0 auto;
+      padding: var(--s4) var(--s3);
+      counter-reset: section;
+    }
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+    a:hover, a:focus-visible {
+      color: var(--accent);
+      text-decoration: underline;
+    }
+    /* Header */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--s3) var(--s2);
+      border-bottom: 1px solid var(--line);
+    }
+    header svg {
+      width: 120px;
+      height: auto;
+      fill: var(--ink);
+    }
+    nav {
+      display: flex;
+      gap: var(--s3);
+    }
+    nav a {
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+    /* Hero */
+    .hero {
+      padding: var(--s5) var(--s3);
+      background-color: var(--surface);
+      border-bottom: 1px solid var(--line);
+    }
+    .hero h1 {
+      font-size: var(--step-4);
+      margin-bottom: var(--s2);
+      letter-spacing: 0.02em;
+    }
+    .hero p {
+      font-size: var(--step-2);
+      margin-bottom: var(--s3);
+    }
+    .hero .actions {
+      display: flex;
+      gap: var(--s3);
+    }
+    .hero .actions button {
+      padding: 0.6em 1.2em;
+      font-size: 0.9rem;
+      font-weight: 600;
+      border: 1px solid var(--accent);
+      background-color: transparent;
+      color: var(--accent);
+      transition: all 0.2s ease;
+    }
+    .hero .actions button:hover {
+      background-color: var(--accent);
+      color: var(--bg);
+    }
+    .hero .visual {
+      width: 100%;
+      height: auto;
+      margin-top: var(--s3);
+    }
+    /* Social proof */
+    .social-proof {
+      padding: var(--s3) var(--s2);
+      border-bottom: 1px solid var(--line);
+    }
+    .social-proof h2 {
+      font-size: var(--step-3);
+      margin-bottom: var(--s2);
+    }
+    .social-proof p {
+      font-size: var(--step-2);
+      color: var(--muted);
+    }
+    /* Features */
+    .features {
+      padding: var(--s3) var(--s2);
+      border-bottom: 1px solid var(--line);
+    }
+    .features h2 {
+      font-size: var(--step-3);
+      margin-bottom: var(--s2);
+    }
+    .features .card {
+      display: flex;
+      gap: var(--s2);
+      margin-bottom: var(--s3);
+    }
+    .features .card svg {
+      width: 32px;
+      height: 32px;
+      fill: var(--ink);
+    }
+    .features .card p {
+      font-size: var(--step-2);
+    }
+    /* How it works */
+    .how-it-works {
+      padding: var(--s3) var(--s2);
+      border-bottom: 1px solid var(--line);
+    }
+    .how-it-works h2 {
+      font-size: var(--step-3);
+      margin-bottom: var(--s2);
+    }
+    .how-it-works .step {
+      font-size: var(--step-2);
+      margin-bottom: var(--s2);
+    }
+    /* Highlight */
+    .highlight {
+      padding: var(--s3) var(--s2);
+      border-bottom: 1px solid var(--line);
+    }
+    .highlight blockquote {
+      font-style: italic;
+      font-size: var(--step-3);
+      margin: var(--s2) 0;
+    }
+    .highlight .byline {
+      font-size: var(--step-2);
+      font-variant: small-caps;
+      color: var(--muted);
+    }
+    /* FAQ */
+    .faq {
+      padding: var(--s3) var(--s2);
+    }
+    .faq h2 {
+      font-size: var(--step-3);
+      margin-bottom: var(--s2);
+    }
+    .faq details {
+      margin-bottom: var(--s3);
+    }
+    .faq summary {
+      font-weight: 600;
+      cursor: pointer;
+      font-size: var(--step-2);
+    }
+    /* Footer */
+    footer {
+      padding: var(--s3) var(--s2);
+      border-top: 1px solid var(--line);
+      font-size: var(--step-2);
+      color: var(--muted);
+    }
+    footer a {
+      color: var(--accent);
+    }
+    /* Responsive */
+    @media (max-width: 600px) {
+      body {
+        padding: var(--s3) var(--s1);
+      }
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      nav {
+        flex-direction: column;
+        gap: var(--s1);
+      }
+    }
+    /* Reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      body {
+        animation: none;
+      }
+    }
+  </style>
+</head>
+<body>
+<header>
+<svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24">
+<path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+</svg>
+<nav>
+<a href="#features">Our Coffee</a>
+<a href="#how-it-works">How it Works</a>
+<a href="#faq">FAQ</a>
+<button>Shop Now</button>
+</nav>
+</header>
+<section class="hero">
+<h1>North Meridian</h1>
+<p>Small-batch specialty coffee roasting with Portland roots</p>
+<div class="actions">
+<button>Learn More</button>
+<button>Shop Now</button>
+</div>
+<svg class="visual" height="auto" preserveaspectratio="xMidYMid meet" viewbox="0 0 320 240" width="100%">
+<defs>
+<lineargradient id="grad-hero" x1="0%" x2="100%" y1="0%" y2="100%">
+<stop offset="0%" stop-color="#fff" stop-opacity="0.1"></stop>
+<stop offset="100%" stop-color="#fbfaf7" stop-opacity="0.1"></stop>
+</lineargradient>
+</defs>
+<rect fill="url(#grad-hero)" height="240" width="320"></rect>
+<path d="M120 80L160 120L120 160" fill="#20201d"></path>
+<path d="M160 120L200 80L240 120" fill="#20201d"></path>
+<path d="M160 120L200 160L240 120" fill="#20201d"></path>
+<path d="M120 160L160 120L200 160" fill="#20201d"></path>
+<path d="M120 80L160 120L200 80" fill="#20201d"></path>
+</svg>
+</section>
+<section class="social-proof">
+<h2>Credibility and Community</h2>
+<p>Featured in Portland Monthly, The Oregonian, and The Coffee Bean &amp; Tea Leaf</p>
+</section>
+<section class="features">
+<h2>Key Offerings and Values</h2>
+<div class="card">
+<svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24">
+<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+<circle cx="12" cy="7" r="5"></circle>
+</svg>
+<p>Hand-picked beans from small farms around the world</p>
+</div>
+<div class="card">
+<svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24">
+<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 0 2-3.98 19.5 19.5 0 0 0-2 3.98A22 22 0 0 1 2 17.92v-3"></path>
+<circle cx="12" cy="7" r="5"></circle>
+</svg>
+<p>Small-batch roasting to preserve flavor</p>
+</div>
+<div class="card">
+<svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24">
+<path d="M21 10c0 7-9 13-9 13s-9-6-9-13c0-7 9-12 9-12s9 5 9 12z"></path>
+<path d="M21 10v6h-6"></path>
+</svg>
+<p>Portland-based roastery with direct trade partnerships</p>
+</div>
+<div class="card">
+<svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24">
+<path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+</svg>
+<p>Third-wave coffee for coffee lovers</p>
+</div>
+<div class="card">
+<svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24">
+<path d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+</svg>
+<p>Sustainable packaging with zero waste</p>
+</div>
+</section>
+<section class="how-it-works">
+<h2>How it Works</h2>
+<div class="step">1. Source beans directly from small farms</div>
+<div class="step">2. Roast in small batches to preserve flavor</div>
+<div class="step">3. Deliver fresh coffee to your door</div>
+</section>
+<section class="highlight">
+<blockquote>“North Meridian’s coffee is a revelation — it tastes like the mountains where it was grown.”</blockquote>
+<div class="byline">— Portland Coffee Club</div>
+</section>
+<section class="faq">
+<h2>FAQ</h2>
+<details>
+<summary>What beans do you source?</summary>
+      We source single-origin beans from small farms in Colombia, Ethiopia, and Guatemala.
+    </details>
+<details>
+<summary>How do you roast your beans?</summary>
+      We use a small-batch roaster to ensure each batch is roasted to perfection.
+    </details>
+<details>
+<summary>Do you offer subscriptions?</summary>
+      Yes, we offer monthly subscription options for coffee lovers.
+    </details>
+</section>
+<footer>
+<p>Contact: <a href="mailto:info@northmeridian.com">info@northmeridian.com</a> | Follow us: <a href="#">Instagram</a> | <a href="#">Facebook</a></p>
+<p>© 2025 North Meridian</p>
+</footer>
+</body>
+</html>

@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>Driftwrite - Write without distraction</title>
+<meta content="Write without the noise. Focus on what matters." name="description"/>
+<style>
+    :root{
+      --bg:#fafaf9;
+      --surface:#fafaf9;
+      --ink:#1a1a19;
+      --muted:#6b6b66;
+      --line:#e7e7e3;
+      --accent:#3a5a40;
+      --step-0:0.85rem;
+      --step-1:1.05rem;
+      --step-2:1.35rem;
+      --step-3:1.9rem;
+      --step-4:2.8rem;
+      --step-5:4rem;
+      --s1:4px;
+      --s2:8px;
+      --s3:16px;
+      --s4:32px;
+      --s5:64px;
+      --s6:96px;
+      --radius:0.3rem;
+    }
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      line-height: 1.5;
+      color: var(--ink);
+    }
+    body {
+      margin: 0;
+      background-color: var(--bg);
+      color: var(--ink);
+      font-size: var(--step-1);
+      padding: var(--s3);
+    }
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+    a:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 4px;
+    }
+    button {
+      background: none;
+      border: none;
+      color: inherit;
+      cursor: pointer;
+      padding: 0;
+      font: inherit;
+      outline: none;
+    }
+    button:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 4px;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: var(--s2) var(--s3);
+      background-color: var(--surface);
+      border: 1px solid var(--line);
+      border-bottom: none;
+    }
+    header h1 {
+      font-size: var(--step-3);
+      font-weight: 600;
+      margin: 0;
+    }
+    nav {
+      display: flex;
+      gap: var(--s2);
+    }
+    nav a {
+      font-size: var(--step-1);
+      font-weight: 500;
+      padding: var(--s1) var(--s2);
+      border: 1px solid transparent;
+      transition: border-color 0.2s;
+    }
+    nav a:hover {
+      border-color: var(--accent);
+    }
+    nav a:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 4px;
+    }
+    nav a.active {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    main {
+      display: flex;
+      gap: var(--s4);
+      margin-top: var(--s3);
+    }
+    .sidebar {
+      width: 200px;
+      background-color: var(--surface);
+      border: 1px solid var(--line);
+      padding: var(--s3);
+      flex-shrink: 0;
+    }
+    .sidebar h2 {
+      font-size: var(--step-2);
+      margin: 0 0 var(--s2) 0;
+    }
+    .sidebar ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .sidebar li {
+      margin-bottom: var(--s3);
+    }
+    .sidebar li:last-child {
+      margin-bottom: 0;
+    }
+    .sidebar li a {
+      display: block;
+      padding: var(--s1) var(--s2);
+      font-size: var(--step-1);
+      color: var(--muted);
+      transition: color 0.2s;
+    }
+    .sidebar li a:hover {
+      color: var(--ink);
+    }
+    .sidebar li a:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 4px;
+    }
+    .sidebar li a.active {
+      color: var(--accent);
+    }
+    .editor {
+      flex: 1;
+      background-color: var(--surface);
+      border: 1px solid var(--line);
+      padding: var(--s3);
+    }
+    .toolbar {
+      display: flex;
+      gap: var(--s2);
+      margin-bottom: var(--s3);
+    }
+    .toolbar button {
+      padding: var(--s1) var(--s2);
+      background: none;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      cursor: pointer;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .toolbar button:hover {
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+    .toolbar button:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 4px;
+    }
+    .editor-content {
+      min-height: 300px;
+      background-color: var(--bg);
+      border: 1px solid var(--line);
+      padding: var(--s2);
+      outline: none;
+    }
+    .right-rail {
+      width: 240px;
+      background-color: var(--surface);
+      border: 1px solid var(--line);
+      padding: var(--s3);
+      display: flex;
+      flex-direction: column;
+      gap: var(--s3);
+    }
+    .right-rail h3 {
+      font-size: var(--step-2);
+      margin: 0 0 var(--s1) 0;
+    }
+    .right-rail p {
+      font-size: var(--step-1);
+      color: var(--muted);
+    }
+    .item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: var(--s1) var(--s2);
+      margin-bottom: var(--s3);
+      background-color: var(--surface);
+      border: 1px solid var(--line);
+    }
+    .item:hover {
+      border-color: var(--accent);
+    }
+    .item.active {
+      background-color: var(--bg);
+      border-color: var(--line);
+    }
+    .item-title {
+      font-size: var(--step-2);
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .item-meta {
+      font-size: var(--step-1);
+      color: var(--muted);
+    }
+    .empty-state {
+      text-align: center;
+      padding: var(--s3);
+      color: var(--muted);
+    }
+    .empty-state button {
+      margin-top: var(--s3);
+      padding: var(--s1) var(--s2);
+      background-color: var(--accent);
+      color: var(--bg);
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+    }
+    .empty-state button:hover {
+      background-color: #2e4a31;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .toolbar button:hover {
+        transform: none;
+      }
+    }
+  </style>
+</head>
+<body>
+<header>
+<h1>Driftwrite</h1>
+<nav>
+<a aria-current="page" class="active" href="index.html">Document List</a>
+<a href="other.html">Pricing</a>
+<a href="other.html">Help</a>
+</nav>
+</header>
+<main>
+<aside class="sidebar">
+<h2>Documents</h2>
+<ul>
+<li><a href="#">Document 1</a></li>
+<li><a href="#">Document 2</a></li>
+<li><a href="#">Document 3</a></li>
+</ul>
+</aside>
+<section class="editor">
+<div class="toolbar">
+<button> Bold </button>
+<button> Italic </button>
+<button> Heading </button>
+<button> Undo </button>
+</div>
+<div class="editor-content" contenteditable="true">Start writing your document here. Focus on what matters. Write without the noise.</div>
+</section>
+</main>
+<section class="right-rail">
+<h3>Document Metadata</h3>
+<p>Last Edited: 10 minutes ago</p>
+<p>Word Count: 245</p>
+<p>Tags: [Work, Draft]</p>
+</section>
+<section class="empty-state">
+<p>You have no documents. Start writing now.</p>
+<button>+ New Document</button>
+</section>
+</body>
+</html>

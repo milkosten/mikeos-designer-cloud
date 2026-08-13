@@ -1,0 +1,22 @@
+{
+  "brand": {
+    "name": "Forgewright",
+    "tagline": "Self-hosted CI/CD for engineering teams",
+    "tone": "Technical, confident, and developer-centric"
+  },
+  "pages": [
+    {
+      "file": "index.html",
+      "title": "Forgewright - Self-hosted CI/CD for engineering teams",
+      "sections": [
+        {
+          "id": "hero",
+          "purpose": "Present the value proposition of Forgewright",
+          "copy": "Build, test, and deploy with confidence. Forgewright is an open-source self-hosted CI/CD pipeline runner designed for engineering teams who need control, reliability, and performance."
+        }
+      ]
+    }
+  ],
+  "palette_hint": "Near-black background (#0b0e0f), light ink (#e6edf0), muted gray (#8a97a0), and a glowing green accent (#00e08a) for contrast and focus",
+  "type_hint": "Monospace for code and labels, system sans for prose; small uppercase tracked labels; terminal-style prompts and code-block treatments"
+}

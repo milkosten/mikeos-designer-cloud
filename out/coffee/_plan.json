@@ -1,0 +1,52 @@
+{
+  "brand": {
+    "name": "North Meridian",
+    "tagline": "Small-batch coffee, crafted for the discerning palate.",
+    "tone": "Elegant, confident, and approachable."
+  },
+  "pages": [
+    {
+      "file": "index.html",
+      "title": "North Meridian \u2014 Small-batch coffee, crafted for the discerning palate.",
+      "sections": [
+        {
+          "id": "hero",
+          "purpose": "Introduce the brand\u2019s value proposition and call to action.",
+          "copy": "Welcome to North Meridian, where every bean is a story. We roast small batches with care, delivering bold, nuanced flavors that reflect the terroir of our beans. Discover the difference of artisanal coffee."
+        },
+        {
+          "id": "social-proof",
+          "purpose": "Build trust through credibility and community.",
+          "copy": "Awarded Best Coffee in Portland 2023 | Featured in *Bon App\u00e9tit* | 100% customer satisfaction"
+        },
+        {
+          "id": "features",
+          "purpose": "Highlight the unique qualities of North Meridian\u2019s coffee.",
+          "copy": "Our coffee is hand-selected, small-batch roasted, and sustainably sourced. Each bag is a testament to craftsmanship and quality."
+        },
+        {
+          "id": "how-it-works",
+          "purpose": "Outline the process from bean to cup.",
+          "copy": "1. Select beans from trusted growers.\n2. Roast in small batches to preserve flavor.\n3. Deliver fresh, artisanal coffee directly to your door."
+        },
+        {
+          "id": "highlight",
+          "purpose": "Reinforce the brand\u2019s unique benefit or a testimonial.",
+          "copy": "\u201cNorth Meridian\u2019s coffee is the best I\u2019ve ever had. It\u2019s like drinking a fine wine with every cup.\u201d \u2014 Sarah L., Portland"
+        },
+        {
+          "id": "faq",
+          "purpose": "Answer common questions with clarity and confidence.",
+          "copy": "What makes North Meridian different? \n<details><summary>Our small-batch roasting process preserves the unique flavor of each bean.</summary> We source only the finest beans and roast them with care to ensure the best possible flavor.</details>\n\nHow long does shipping take? \n<details><summary>Orders are shipped within 2 business days.</summary> We use eco-friendly packaging and deliver your coffee fresh to your doorstep.</details>\n\nDo you offer bulk orders? \n<details><summary>Yes! We offer bulk discounts for orders of 12 bags or more.</summary> Contact us for more information about our bulk options.</details>"
+        },
+        {
+          "id": "footer",
+          "purpose": "Provide contact information and additional links.",
+          "copy": "North Meridian | 123 Portland Street | Portland, OR | hello@northmeridian.com\n\n\u00a9 2025 North Meridian. All rights reserved."
+        }
+      ]
+    }
+  ],
+  "palette_hint": "Paper #fbfaf7, rich ink #20201d, oxblood accent #7a1f1f, hairline rules #dcd8cf",
+  "type_hint": "Serif for headlines and body (Georgia/ui-serif), generous measure, drop-cap on lead paragraph, italic pull-quotes, small-caps for bylines/labels"
+}

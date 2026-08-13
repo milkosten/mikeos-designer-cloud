@@ -1,0 +1,39 @@
+{
+	admin off
+	auto_https off
+}
+
+:80 {
+	encode zstd gzip
+
+	# SPA's own files FIRST — "/assets" is 6 chars and would otherwise be captured by the
+	# 6-char project-id site rule below. Serve them from the SPA dir.
+	@spa_assets path /assets/* /app.js /config.js /favicon.ico
+	handle @spa_assets {
+		root * /srv/spa
+		file_server
+	}
+
+	# Generated project sites: /<6-char-id>/... served from the sites dir.
+	@site path_regexp site ^/[0-9A-Za-z]{6}(/.*)?$
+	handle @site {
+		root * /data/sites
+		file_server {
+			index index.html
+		}
+	}
+
+	# SPA shell: root + OAuth callback fall back to index.html.
+	@spa path / /auth/callback
+	handle @spa {
+		root * /srv/spa
+		rewrite * /index.html
+		file_server
+	}
+
+	# Fallback: anything else from the SPA dir.
+	handle {
+		root * /srv/spa
+		file_server
+	}
+}

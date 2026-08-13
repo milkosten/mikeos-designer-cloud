@@ -1,0 +1,52 @@
+{
+  "brand": {
+    "name": "Pulsewatch",
+    "tagline": "Monitor your apps' uptime with confidence.",
+    "tone": "Professional, clear, and approachable"
+  },
+  "pages": [
+    {
+      "file": "settings.html",
+      "title": "Pulsewatch - Account Settings",
+      "sections": [
+        {
+          "id": "app-shell",
+          "purpose": "App shell with active 'Settings' tab",
+          "copy": "Top bar with logo and user avatar. Sidebar with 'Settings' tab highlighted."
+        },
+        {
+          "id": "settings-nav",
+          "purpose": "Secondary navigation for settings sections",
+          "copy": "Left-side list with 'Profile', 'Account', 'Notifications', 'Billing', 'Security' \u2014 'Profile' is active."
+        },
+        {
+          "id": "profile-section",
+          "purpose": "Form section for profile settings",
+          "copy": "Card with label 'Profile', text input for name, email, and password. Helper text: 'Password must be at least 8 characters'. Toggle for 'Enable 2FA'."
+        },
+        {
+          "id": "notifications-section",
+          "purpose": "Form section for notification preferences",
+          "copy": "Card with label 'Notifications', segmented control for 'Email', 'Push', and 'SMS'. Radio rows for 'Critical alerts only' and 'All alerts'."
+        },
+        {
+          "id": "billing-section",
+          "purpose": "Form section for billing and subscription",
+          "copy": "Card with label 'Billing', select for 'Subscription plan', and a toggle for 'Auto-renew'. Helper text: 'Your current plan ends on 2025-05-01'."
+        },
+        {
+          "id": "danger-zone",
+          "purpose": "Destructive action section",
+          "copy": "Card with label 'Delete Account', warning text: 'This action is irreversible. All data will be permanently deleted.', and a danger button labeled 'Delete Account'."
+        },
+        {
+          "id": "save-bar",
+          "purpose": "Footer with save and cancel actions",
+          "copy": "Inline actions with primary button 'Save Changes' and secondary button 'Cancel'."
+        }
+      ]
+    }
+  ],
+  "palette_hint": "White/`#f6f8fb` surfaces, slate ink `#0f172a`, muted `#5b6b82`, professional blue `#2563eb` for primary actions; soft `#e6ebf2` borders.",
+  "type_hint": "System sans-serif, medium weights, clear hierarchy, readable and even."
+}

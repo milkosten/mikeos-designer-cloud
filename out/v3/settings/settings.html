@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>Pulsewatch - Account Settings</title>
+<meta content="Configure your Pulsewatch account settings, including profile, notifications, billing, and security preferences." name="description"/>
+<style>
+    :root{
+      --bg:#f6f8fb;
+      --surface:#f6f8fb;
+      --ink:#0f172a;
+      --muted:#5b6b82;
+      --line:#e6ebf2;
+      --accent:#2563eb;
+      --accent-2:#0d9488;
+      --step-0:0.85rem;
+      --step-1:1.05rem;
+      --step-2:1.35rem;
+      --step-3:1.9rem;
+      --step-4:2.8rem;
+      --step-5:4rem;
+      --s1:4px;
+      --s2:8px;
+      --s3:16px;
+      --s4:32px;
+      --s5:64px;
+      --s6:96px;
+      --radius:12px;
+    }
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    }
+    body {
+      margin: 0;
+      background-color: var(--bg);
+      color: var(--ink);
+      line-height: 1.5;
+      font-size: var(--step-1);
+      padding: var(--s3);
+    }
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: var(--s2) var(--s3);
+      background-color: var(--surface);
+      border-bottom: 1px solid var(--line);
+    }
+    header h1 {
+      font-size: var(--step-2);
+      font-weight: 500;
+      letter-spacing: 0.03em;
+      color: var(--ink);
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: var(--s2);
+    }
+    .logo img {
+      width: 24px;
+      height: 24px;
+    }
+    nav {
+      display: flex;
+      gap: var(--s3);
+    }
+    nav a {
+      color: var(--muted);
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+    nav a.active {
+      color: var(--accent);
+      font-weight: 600;
+    }
+    main {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: var(--s4) 0;
+    }
+    section {
+      margin-bottom: clamp(3.5rem, 8vw, 7rem);
+    }
+    .card {
+      background-color: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: var(--s3);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    .card h2 {
+      font-size: var(--step-2);
+      margin-bottom: var(--s2);
+      color: var(--ink);
+    }
+    .form-group {
+      margin-bottom: var(--s3);
+    }
+    .form-group label {
+      display: block;
+      font-size: 0.85rem;
+      margin-bottom: var(--s1);
+      color: var(--muted);
+    }
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: var(--s1) var(--s2);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background-color: var(--surface);
+      color: var(--ink);
+    }
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+    }
+    .form-group .helper {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: var(--s1);
+    }
+    .toggle {
+      display: flex;
+      align-items: center;
+      gap: var(--s2);
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+    .toggle input[type="checkbox"] {
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--line);
+      border-radius: 4px;
+      background-color: var(--surface);
+    }
+    .toggle input[type="checkbox"]:checked {
+      background-color: var(--accent);
+    }
+    .toggle input[type="checkbox"]:checked::after {
+      content: '';
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      background-color: white;
+      border-radius: 4px;
+      left: 4px;
+      top: 4px;
+    }
+    .toggle input[type="checkbox"]:focus {
+      outline: none;
+    }
+    .segmented {
+      display: flex;
+      gap: var(--s2);
+      font-size: 0.85rem;
+      margin-top: var(--s1);
+    }
+    .segmented button {
+      padding: var(--s1) var(--s2);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background-color: var(--surface);
+      color: var(--ink);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .segmented button.active {
+      background-color: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+    .segmented button:hover {
+      background-color: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+    .radio-group {
+      display: flex;
+      flex-direction: column;
+      gap: var(--s1);
+      margin-top: var(--s1);
+    }
+    .radio-group label {
+      display: flex;
+      align-items: center;
+      gap: var(--s1);
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+    .radio-group input[type="radio"] {
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      border: 2px solid var(--line);
+      border-radius: 4px;
+      background-color: var(--surface);
+    }
+    .radio-group input[type="radio"]:checked {
+      background-color: var(--accent);
+    }
+    .radio-group input[type="radio"]:checked::after {
+      content: '';
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      background-color: white;
+      border-radius: 4px;
+      left: 4px;
+      top: 4px;
+    }
+    .danger-zone {
+      background-color: #fff8f8;
+      border: 1px solid #ffcccc;
+      border-radius: var(--radius);
+      padding: var(--s3);
+      margin-top: var(--s4);
+    }
+    .danger-zone h2 {
+      font-size: var(--step-2);
+      color: var(--ink);
+      margin-bottom: var(--s2);
+    }
+    .danger-zone .warning {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-bottom: var(--s3);
+    }
+    .danger-zone button {
+      padding: var(--s1) var(--s2);
+      border: none;
+      border-radius: var(--radius);
+      background-color: var(--accent);
+      color: white;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    .danger-zone button:hover {
+      background-color: #1e4d92;
+    }
+    .save-bar {
+      display: flex;
+      justify-content: flex-end;
+      gap: var(--s3);
+      margin-top: var(--s4);
+    }
+    .save-bar button {
+      padding: var(--s1) var(--s2);
+      border: none;
+      border-radius: var(--radius);
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    .save-bar button.primary {
+      background-color: var(--accent);
+      color: white;
+    }
+    .save-bar button.primary:hover {
+      background-color: #1e4d92;
+    }
+    .save-bar button.secondary {
+      background-color: var(--surface);
+      color: var(--ink);
+      border: 1px solid var(--line);
+    }
+    .save-bar button.secondary:hover {
+      background-color: #f1f5f9;
+      border-color: var(--accent);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .save-bar button:hover {
+        background-color: transparent;
+      }
+    }
+    @media (max-width: 600px) {
+      main {
+        padding: var(--s2) 0;
+      }
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      nav {
+        flex-direction: column;
+        gap: var(--s1);
+      }
+      .card {
+        margin-bottom: var(--s4);
+      }
+    }
+  </style>
+</head>
+<body>
+<header>
+<div class="logo">
+<img alt="Pulsewatch Logo" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 25'%3E%3Cpath fill='%230f172a' d='M12 2L2 7l10 5L12 2zm0 18l-10-5L2 7l10 5zm0-14l-10 5L2 11l10-5zM12 14l-10-5L2 7l10 5zm0 4l-10-5L2 9l10 5zM12 22l-10-5L2 17l10 5z'/%3E%3C/svg%3E"/>
+</div>
+<h1>Pulsewatch Account Settings</h1>
+<nav>
+<a href="#profile">Profile</a>
+<a href="#notifications">Notifications</a>
+<a href="#billing">Billing</a>
+<a href="#security">Security</a>
+</nav>
+</header>
+<main>
+<section>
+<div class="card">
+<h2>Profile Settings</h2>
+<div class="form-group">
+<label for="username">Username</label>
+<input id="username" type="text" value="johndoe123"/>
+<span class="helper">Your public username</span>
+</div>
+<div class="form-group">
+<label for="email">Email</label>
+<input id="email" type="email" value="johndoe@example.com"/>
+<span class="helper">Your primary email address</span>
+</div>
+<div class="toggle">
+<input checked="" id="email-notifications" type="checkbox"/>
+<label for="email-notifications">Receive email notifications</label>
+</div>
+</div>
+</section>
+<section>
+<div class="card">
+<h2>Notifications</h2>
+<div class="segmented">
+<button class="active">All</button>
+<button>Important</button>
+<button>None</button>
+</div>
+<div class="form-group">
+<label for="notification-time">Notification Time</label>
+<input id="notification-time" type="time" value="09:00"/>
+</div>
+<div class="radio-group">
+<label><input checked="" name="notification-type" type="radio"/>Daily Summary</label>
+<label><input name="notification-type" type="radio"/>Weekly Summary</label>
+<label><input name="notification-type" type="radio"/>No Summary</label>
+</div>
+</div>
+</section>
+<section>
+<div class="card">
+<h2>Billing</h2>
+<div class="form-group">
+<label for="payment-method">Payment Method</label>
+<input id="payment-method" type="text" value="Visa ending in 4242"/>
+<span class="helper">Update your payment method</span>
+</div>
+<div class="form-group">
+<label for="subscription">Subscription</label>
+<select id="subscription">
+<option selected="">Monthly - $9.99</option>
+<option>Yearly - $99.99</option>
+</select>
+</div>
+<div class="toggle">
+<input checked="" id="auto-renew" type="checkbox"/>
+<label for="auto-renew">Auto-renew subscription</label>
+</div>
+</div>
+</section>
+<section>
+<div class="card">
+<h2>Security</h2>
+<div class="danger-zone">
+<h2>Two-Factor Authentication</h2>
+<p class="warning">Enable two-factor authentication to secure your account.</p>
+<button>Enable 2FA</button>
+</div>
+<div class="form-group">
+<label for="password">Password</label>
+<input id="password" type="password" value="••••••••"/>
+<span class="helper">Change your password</span>
+</div>
+<div class="toggle">
+<input checked="" id="remember-device" type="checkbox"/>
+<label for="remember-device">Remember this device</label>
+</div>
+</div>
+</section>
+<section>
+<div class="save-bar">
+<button class="secondary">Cancel</button>
+<button class="primary">Save Changes</button>
+</div>
+</section>
+</main>
+</body>
+</html>

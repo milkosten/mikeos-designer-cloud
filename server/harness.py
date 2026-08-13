@@ -13,6 +13,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from server import gpu
 from server.sanitize import sanitize_html, has_violation
+from server.analyze import analyze, autofix
 
 logger = logging.getLogger(__name__)
 
@@ -89,12 +90,12 @@ def list_page_types() -> List[Dict[str, str]]:
 
 # Human blurbs for the page types (their md is a section skeleton, not prose).
 _PAGE_TYPE_DESC = {
-    "Landing": "A marketing landing page: hero, features, how-it-works, FAQ, footer.",
-    "Pricing": "A pricing page with 3 plan tiers, a comparison table, and FAQ.",
-    "Portfolio": "A personal/studio portfolio: selected work, about, and contact.",
-    "Blog post": "A long-form article page with header, body, author card, and related reading.",
-    "Coming-soon": "A single-screen teaser with an email-capture mockup and atmosphere.",
-    "Dashboard mockup": "A product UI mockup: sidebar, KPI stat cards, an inline-SVG chart, and panels.",
+    "App Dashboard": "A data-dense product dashboard: sidebar + top bar, KPI cards, a real inline-SVG chart, and data tables.",
+    "App Screen": "A functional app screen (board, inbox, list/detail, or editor) with real chrome, data, and component states.",
+    "Settings": "A product settings/account screen: section nav, grouped forms, toggles, and tabs.",
+    "Onboarding": "A signup / login / onboarding flow screen with a form, steps, and value framing.",
+    "Pricing": "A product pricing page: plan tiers, a comparison table, and FAQ.",
+    "Landing": "A product landing page: a hero with a framed UI preview, features, and CTA.",
 }
 
 
@@ -160,6 +161,21 @@ def _quality_ok(html: str) -> Tuple[bool, List[str]]:
             break
     if "viewport" not in low:
         issues.append("no viewport meta")
+    # exactly one <h1> — the hero/lead headline
+    h1n = len(re.findall(r"<h1[\s>]", low))
+    if h1n == 0:
+        issues.append("no <h1> (the lead headline must be the single h1)")
+    elif h1n > 1:
+        issues.append(f"{h1n} <h1> elements (use exactly one)")
+    # duplicate id attributes — invalid, and the reused-SVG-gradient bug
+    ids = re.findall(r'\bid=["\']([^"\']+)["\']', html)
+    dupes = sorted({i for i in ids if ids.count(i) > 1})
+    if dupes:
+        issues.append("duplicate id(s): " + ", ".join(dupes[:6]))
+    # hero art that is just a flat filled rectangle (a lone rect / full-canvas path)
+    if re.search(r"<svg[^>]*>\s*<(rect|path)[^>]*(fill=)[^>]*/?>\s*(<defs>.*?</defs>\s*)?</svg>",
+                 html, re.I | re.S):
+        issues.append("hero/graphic is a single flat filled shape (make it a real composition)")
     return (len(issues) == 0, issues)
 
 
@@ -285,23 +301,30 @@ async def build_page(user_prompt: str, plan_spec: Dict[str, Any], page: Dict[str
     raw = await generate_page(user_prompt, plan_spec, page, page_type_name,
                               structure_body, style_name, style_body, page_list)
     cleaned, removed = sanitize_html(raw)
-    ok, issues = _quality_ok(cleaned)
+    cleaned = autofix(cleaned, style_name, page_type_name)   # deterministic repairs first
 
-    if has_violation(removed) or not ok:
-        reason_parts = []
+    # Closed-loop QA: quality gate + design linter -> targeted GPU repair -> autofix -> re-check.
+    MAX_ROUNDS = 2
+    for rnd in range(MAX_ROUNDS):
+        _ok, issues = _quality_ok(cleaned)
+        findings = analyze(cleaned, style_name, page_type_name)
+        problems: List[str] = list(issues) + list(findings)
         if has_violation(removed):
-            reason_parts.append("sanitizer removed: " + ", ".join(sorted(set(removed))))
-        if not ok:
-            reason_parts.append("quality: " + ", ".join(issues))
-        reason = "; ".join(reason_parts)
-        logger.info("repairing %s: %s", page.get("file"), reason)
+            problems.insert(0, "removed disallowed content: " + ", ".join(sorted(set(removed))))
+        if not problems:
+            break
+        reason = "; ".join(problems)
+        logger.info("repair round %d for %s: %s", rnd + 1, page.get("file"), reason)
         try:
             repaired = await repair(cleaned, reason)
-            if repaired and "</html>" in repaired.lower():
-                cleaned, _removed2 = sanitize_html(repaired)
         except Exception as e:
-            logger.warning("repair failed for %s (keeping sanitized original): %s",
-                           page.get("file"), e)
+            logger.warning("repair failed for %s (keeping current): %s", page.get("file"), e)
+            break
+        if repaired and "</html>" in repaired.lower():
+            cleaned, removed = sanitize_html(repaired)
+            cleaned = autofix(cleaned, style_name, page_type_name)
+        else:
+            break
 
     return {"file": page.get("file", "index.html"), "html": cleaned}
 

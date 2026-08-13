@@ -1,0 +1,47 @@
+{
+  "brand": {
+    "name": "Forgewright",
+    "tagline": "Self-hosted CI/CD for developers who build things",
+    "tone": "Technical, precise, and developer-grade"
+  },
+  "pages": [
+    {
+      "file": "index.html",
+      "title": "Forgewright - Pipeline Dashboard",
+      "sections": [
+        {
+          "id": "app-shell",
+          "purpose": "App shell with sidebar and top bar",
+          "copy": "Sidebar: 'Forgewright' wordmark with a small line-icon nav (active: 'Pipelines'). Top bar: 'Pipeline Dashboard' title, search field, and avatar/menu."
+        },
+        {
+          "id": "toolbar-row",
+          "purpose": "Toolbar row with page heading and controls",
+          "copy": "Page heading: 'Pipeline Dashboard'. Controls: segmented control for date range (Today, This Week, All Time), primary button 'Refresh Data'."
+        },
+        {
+          "id": "kpi-cards",
+          "purpose": "KPI cards with metrics",
+          "copy": "3 metric cards: 'Build Success Rate' (92.4%, -1.2% delta in red), 'Average Build Duration' (3.2 min, +0.5 min delta in amber), 'Total Pipeline Runs' (1,245, +125 delta in green)."
+        },
+        {
+          "id": "primary-chart",
+          "purpose": "Primary chart showing pipeline trends",
+          "copy": "A hand-built inline SVG line chart showing pipeline success rate over the last 30 days. X-axis: dates, Y-axis: success rate. Emphasized endpoint: 92.4% on the last day. Gridlines in #232a2d, axis labels in monospace, semantic color for delta."
+        },
+        {
+          "id": "data-table",
+          "purpose": "Data table of recent builds",
+          "copy": "A realistic table with header row: 'Build ID', 'Status', 'Duration', 'Branch', 'Started At'. 5 rows of data: 'BR-2024-04-05-12', 'Success', '3.2 min', 'main', '2024-04-05 12:00'; status pills: 'Success' (green), 'Failed' (red), 'Pending' (amber). Hover row state: subtle inner glow."
+        },
+        {
+          "id": "secondary-panel",
+          "purpose": "Secondary panel with activity feed",
+          "copy": "An activity feed with items: 'Pipeline BR-2024-04-05-12 completed successfully', 'Branch main merged into dev', 'Build BR-2024-04-05-11 failed at step 3'. Each item includes a small icon, timestamp, and a faint grid texture."
+        }
+      ]
+    }
+  ],
+  "palette_hint": "Near-black tinted ground #0b0e0f, surface #14181a, light ink #e6edf0, muted #8a97a0, glowing accent #00e08a",
+  "type_hint": "Monospace for code/labels/numerals, system sans for prose; small uppercase tracked labels"
+}

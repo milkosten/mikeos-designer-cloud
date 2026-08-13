@@ -1,0 +1,42 @@
+{
+  "brand": {
+    "name": "Driftwrite",
+    "tagline": "Write without the noise. Focus on what matters.",
+    "tone": "Calm, confident, and purposeful"
+  },
+  "pages": [
+    {
+      "file": "index.html",
+      "title": "Driftwrite - Write without distraction",
+      "sections": [
+        {
+          "id": "app-shell",
+          "purpose": "App shell with sidebar and top bar",
+          "copy": "Sidebar: 'Documents' with a count of 3. Top bar: 'Driftwrite' logo, active item 'Document List', and user menu (profile icon)."
+        },
+        {
+          "id": "primary-work-area",
+          "purpose": "Primary work area with editor screen",
+          "copy": "Editor canvas with a large, clean text area. Toolbar includes 'Bold', 'Italic', 'Heading', and 'Undo' buttons."
+        },
+        {
+          "id": "item-components",
+          "purpose": "Item components with hover and active states",
+          "copy": "Document cards with title, last edited date, and tags. Hover: subtle border highlight. Active: background tint and expanded details."
+        },
+        {
+          "id": "right-rail",
+          "purpose": "Right rail or detail panel",
+          "copy": "Right rail shows document metadata: 'Last Edited: 10 minutes ago', 'Word Count: 245', and 'Tags: [Work, Draft]'."
+        },
+        {
+          "id": "empty-count-affordances",
+          "purpose": "Empty / count affordances",
+          "copy": "Empty-state hint: 'You have no documents. Start writing now.' with a '+ New Document' button."
+        }
+      ]
+    }
+  ],
+  "palette_hint": "near-white bg #fafaf9, ink #1a1a19, muted #6b6b66, accent #3a5a40",
+  "type_hint": "Modern system sans-serif, light-to-regular weights, tight headings, big size jumps"
+}

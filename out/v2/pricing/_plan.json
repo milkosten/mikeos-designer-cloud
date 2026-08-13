@@ -1,0 +1,52 @@
+{
+  "brand": {
+    "name": "Bloomboard",
+    "tagline": "Organize your creative chaos with colorful, intuitive kanban boards",
+    "tone": "Friendly, energetic, and approachable"
+  },
+  "pages": [
+    {
+      "file": "pricing.html",
+      "title": "Pricing - Bloomboard",
+      "sections": [
+        {
+          "id": "header",
+          "purpose": "Navigation bar with logo and links to key sections",
+          "copy": "Logo: Bloomboard | Links: Home | Features | Pricing | Contact"
+        },
+        {
+          "id": "title-block",
+          "purpose": "Page heading and framing of the pricing section",
+          "copy": "Pricing for Bloomboard | Choose the plan that fits your team's workflow"
+        },
+        {
+          "id": "plan-tiers",
+          "purpose": "Three pricing tiers in a grid layout",
+          "copy": "Starter (Recommended) | Pro | Team | Each tier includes: name, price ($/month), short blurb, feature list with inline-SVG checks, and a CTA button. Starter is highlighted with a subtle border and scale."
+        },
+        {
+          "id": "feature-comparison",
+          "purpose": "Feature comparison table with overflow-x:auto",
+          "copy": "Columns include: Feature Name, Starter, Pro, Team. Features include: Unlimited Boards, 5 Team Members, Priority Support, Advanced Analytics, and Custom Branding."
+        },
+        {
+          "id": "faq",
+          "purpose": "FAQ section with billing/plan questions",
+          "copy": "Questions: Can I upgrade my plan? What happens if I exceed my team limit? Is there a free trial? Each question is wrapped in <details> tags."
+        },
+        {
+          "id": "final-cta",
+          "purpose": "Final CTA band with a call to action",
+          "copy": "Start your free trial today and experience the power of Bloomboard"
+        },
+        {
+          "id": "footer",
+          "purpose": "Footer with contact and links",
+          "copy": "\u00a9 2025 Bloomboard | Contact: hello@bloomboard.com | Terms | Privacy"
+        }
+      ]
+    }
+  ],
+  "palette_hint": "Bright coral, sunshine yellow, and mint green on an off-white background; harmonious and cheerful",
+  "type_hint": "Rounded-feeling system sans-serif with bold headlines, big friendly text, and rounded corners"
+}
