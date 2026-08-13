@@ -296,7 +296,8 @@ async def _insert_project(user_id: str, body: CreateBody, brief: Dict[str, Any],
         "VALUES ($1,$2,$3,$4,$5,$6,$7::jsonb,$8::jsonb,$9::jsonb,$10,'unlisted',true) "
         "RETURNING *",
         site_id, user_id, title, brief.get("page_type") or body.page_type, body.style,
-        body.prompt, json.dumps([]), json.dumps(pages), json.dumps(brief), body.interactive)
+        body.prompt, json.dumps([]), json.dumps(pages), json.dumps(brief),
+        bool(brief.get("interactive", body.interactive)))
     if not row:  # never-trust-200: verify the row actually landed
         sites.delete_site(site_id)
         raise HTTPException(status_code=500, detail="insert failed")

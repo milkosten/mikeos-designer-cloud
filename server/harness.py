@@ -195,6 +195,15 @@ _PLAN_SCHEMA: Dict[str, Any] = {
         },
         "palette_hint": {"type": "string"},
         "type_hint": {"type": "string"},
+        "needs_app": {"type": "boolean"},
+        "data_model": {
+            "type": "object",
+            "properties": {
+                "storage": {"type": "string"},                      # "localStorage" | "indexeddb"
+                "keys": {"type": "array", "items": {"type": "string"}},
+                "entities": {"type": "string"},
+            },
+        },
         "pages": {
             "type": "array",
             "items": {
@@ -261,6 +270,31 @@ _INTERACTIVE_DIRECTIVE = (
     "project has multiple pages, link them with plain relative `<a href=\"other.html\">` nav.")
 
 
+def _app_directive(files: List[str], data_model: Optional[Dict[str, Any]]) -> str:
+    """Per-page directive for multi-file consistency + a browser (frontend) data layer."""
+    d = ""
+    if len(files) > 1:
+        d += ("\n\n## MULTI-FILE PROJECT\n"
+              f"This project has {len(files)} files: {', '.join(files)}. Build THIS file so it is "
+              "CONSISTENT with the others — identical design tokens, and a shared nav (top bar or "
+              "sidebar) that links every file with relative `<a href=\"file.html\">`. `index.html` is "
+              "the home/entry. Do not invent files that aren't in that list.")
+    dm = data_model or {}
+    if dm:
+        storage = dm.get("storage") or "localStorage"
+        keys = dm.get("keys") or []
+        entities = dm.get("entities") or ""
+        d += ("\n\n## FRONTEND DATABASE (no backend)\n"
+              f"Persist data in the browser with **{storage}** — implement a REAL data layer with "
+              "add / edit / delete / read so data survives navigation AND page reload. There is NO "
+              "server and NO network. "
+              + (f"Use these EXACT storage keys on every page: {', '.join(keys)}. " if keys else "")
+              + (f"Data model: {entities}. " if entities else "")
+              + "Seed a few realistic example records on first load if empty. Every page reads/writes "
+                "the SAME keys so the whole app stays coherent across files.")
+    return d
+
+
 _EXPAND_SCHEMA: Dict[str, Any] = {
     "type": "object",
     "properties": {
@@ -313,6 +347,8 @@ async def generate_page(user_prompt: str, plan_spec: Dict[str, Any],
     plan_note = json.dumps({"brand": plan_spec.get("brand"),
                             "palette_hint": plan_spec.get("palette_hint"),
                             "type_hint": plan_spec.get("type_hint"),
+                            "files": page_list,
+                            "data_model": plan_spec.get("data_model"),
                             "this_page": page}, ensure_ascii=False)
     filled = (
         _SYSTEM_GENERATE
@@ -328,6 +364,8 @@ async def generate_page(user_prompt: str, plan_spec: Dict[str, Any],
     )
     if interactive:
         filled += _INTERACTIVE_DIRECTIVE
+    if plan_spec.get("needs_app") or len(page_list) > 1 or plan_spec.get("data_model"):
+        filled += _app_directive(page_list, plan_spec.get("data_model"))
     messages = [
         {"role": "system", "content": filled},
         {"role": "user", "content":
@@ -627,7 +665,15 @@ async def build_project(prompt: str, page_type: str, style: str,
     brand = (plan_spec.get("brand") or {}).get("name")
     if brand:
         emit("Planned", brand)
-    pages_spec = plan_spec.get("pages") or [{"file": "index.html"}]
+    # The plan decides the full file structure — cap at 5 files, entry is index.html.
+    pages_spec = (plan_spec.get("pages") or [{"file": "index.html"}])[:5]
+    if not any(p.get("file") == "index.html" for p in pages_spec):
+        pages_spec[0]["file"] = "index.html"
+    plan_spec["pages"] = pages_spec
+    # A functional app (needs a JS/data layer) always gets JS, regardless of the toggle.
+    needs_app = bool(plan_spec.get("needs_app")) or bool(plan_spec.get("data_model"))
+    interactive = interactive or needs_app
+    plan_spec["interactive"] = interactive
     page_list = [p.get("file", "index.html") for p in pages_spec]
     build_prompt = prompt if from_brief is not None else effective_prompt
 
@@ -647,4 +693,5 @@ async def build_project(prompt: str, page_type: str, style: str,
             logger.info("hero image injection failed: %s", e)
 
     result_brief = plan_spec if from_brief is not None else _brief_from_plan(plan_spec, enriched)
+    result_brief["interactive"] = interactive   # persist the effective value (apps auto-enable JS)
     return result_brief, pages
