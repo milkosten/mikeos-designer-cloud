@@ -1,0 +1,480 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sentinel Dashboard</title>
+  <meta name="description" content="Sentinel Server Monitoring Dashboard - CPU, Memory, Disk, Network KPIs and Recent Alerts">
+  <style>
+    :root {
+      --bg: #0b0e0f;
+      --surface: #14181a;
+      --ink: #e6edf0;
+      --muted: #8a97a0;
+      --accent: #00e08a;
+      --accent-2: #4ea1ff;
+      --step-0: 0.625rem;
+      --step-1: 1rem;
+      --step-2: 1.5rem;
+      --step-3: 2.25rem;
+      --step-4: 3.375rem;
+      --step-5: 5.0625rem;
+      --s1: 4px;
+      --s2: 8px;
+      --s3: 12px;
+      --s4: 16px;
+      --s5: 24px;
+      --radius: 0.25rem;
+      --border: #232a2d;
+    }
+
+    html {
+      color-scheme: dark;
+    }
+
+    body {
+      margin: 0;
+      font-family: ui-monospace, "SF Mono", "Cascadia Code", Menlo, monospace;
+      background-color: var(--bg);
+      color: var(--ink);
+      line-height: 1.5;
+      padding: var(--s3);
+      min-height: 100dvh;
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: var(--s2) var(--s3);
+      background-color: var(--surface);
+      border-bottom: 1px solid var(--border);
+      margin-bottom: var(--s3);
+    }
+
+    header h1 {
+      font-size: var(--step-2);
+      font-weight: 500;
+      margin: 0;
+    }
+
+    .search-field {
+      display: flex;
+      gap: var(--s1);
+      background-color: var(--surface);
+      border: 1px solid var(--border);
+      padding: var(--s1) var(--s2);
+      border-radius: var(--radius);
+      width: 300px;
+    }
+
+    .search-field input {
+      background: transparent;
+      border: none;
+      color: var(--ink);
+      font-size: 0.875rem;
+      width: 100%;
+      outline: none;
+    }
+
+    .avatar {
+      width: 32px;
+      height: 32px;
+      background-color: var(--accent);
+      border-radius: var(--radius);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--bg);
+      font-weight: bold;
+      font-size: 0.75rem;
+    }
+
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: var(--s2);
+      background-color: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: var(--s2);
+      height: calc(100vh - 64px);
+    }
+
+    .sidebar-item {
+      display: flex;
+      align-items: center;
+      gap: var(--s1);
+      padding: var(--s1) var(--s2);
+      border-radius: var(--radius);
+      background-color: var(--surface);
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .sidebar-item:hover {
+      background-color: #1a2024;
+    }
+
+    .sidebar-item.active {
+      background-color: var(--accent);
+      color: var(--bg);
+    }
+
+    .sidebar-icon {
+      width: 16px;
+      height: 16px;
+      fill: currentColor;
+    }
+
+    .stats {
+      display: flex;
+      gap: var(--s3);
+      margin-bottom: var(--s3);
+      flex-wrap: wrap;
+    }
+
+    .stat {
+      flex: 1 1 250px;
+      background-color: var(--surface);
+      padding: var(--s2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      display: flex;
+      flex-direction: column;
+      gap: var(--s1);
+    }
+
+    .stat-label {
+      font-size: 0.75rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .stat-value {
+      font-size: var(--step-2);
+      font-weight: 600;
+    }
+
+    .stat-delta {
+      display: flex;
+      align-items: center;
+      gap: var(--s1);
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    .stat-up {
+      color: var(--accent);
+    }
+
+    .stat-down {
+      color: var(--accent-2);
+    }
+
+    .chart-container {
+      background-color: var(--surface);
+      padding: var(--s2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: var(--s3);
+    }
+
+    .chart {
+      width: 100%;
+      height: 200px;
+      background: linear-gradient(to bottom, var(--surface) 50%, #1a2024 50%);
+      position: relative;
+    }
+
+    .chart-axis {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding-left: var(--s2);
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    .chart-axis .label {
+      text-align: right;
+    }
+
+    .chart-grid {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    .chart-grid line {
+      stroke: #2a343b;
+      stroke-width: 1;
+    }
+
+    .chart-line {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      fill: none;
+      stroke: var(--accent);
+      stroke-width: 2;
+    }
+
+    .chart-point {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      fill: none;
+      stroke: var(--accent);
+      stroke-width: 2;
+    }
+
+    .chart-point circle {
+      fill: var(--accent);
+      r: 4px;
+    }
+
+    .panel {
+      background-color: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: var(--s2);
+      margin-bottom: var(--s3);
+    }
+
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .table th, .table td {
+      padding: var(--s1) var(--s2);
+      border: 1px solid var(--border);
+      text-align: left;
+    }
+
+    .table th {
+      font-weight: 500;
+      color: var(--muted);
+    }
+
+    .table .status {
+      display: flex;
+      gap: var(--s1);
+      align-items: center;
+    }
+
+    .table .status.green {
+      color: var(--accent);
+    }
+
+    .table .status.orange {
+      color: var(--accent-2);
+    }
+
+    .table .status.red {
+      color: var(--accent-2);
+    }
+
+    .table .status .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .table .status.green .dot {
+      background-color: var(--accent);
+    }
+
+    .table .status.orange .dot {
+      background-color: var(--accent-2);
+    }
+
+    .table .status.red .dot {
+      background-color: var(--accent-2);
+    }
+
+    .footer {
+      margin-top: var(--s3);
+      padding: var(--s2);
+      background-color: var(--surface);
+      border-top: 1px solid var(--border);
+      font-size: 0.75rem;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .chart-line, .chart-point {
+        transition: none;
+      }
+    }
+
+    @media (min-width: 768px) {
+      body {
+        padding: var(--s3) var(--s4);
+      }
+
+      .stats {
+        flex-direction: row;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Sentinel</h1>
+    <div class="search-field">
+      <input type="text" placeholder="Search...">
+    </div>
+    <div class="avatar">JD</div>
+  </header>
+
+  <div class="sidebar">
+    <div class="sidebar-item active">
+      <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 9h18v10H3z"></path>
+        <path d="M3 9v10h18"></path>
+      </svg>
+      <span>Dashboard</span>
+    </div>
+    <div class="sidebar-item">
+      <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path>
+        <path d="M12 8v6"></path>
+        <path d="M12 16h.01"></path>
+      </svg>
+      <span>Alerts</span>
+    </div>
+    <div class="sidebar-item">
+      <svg class="sidebar-icon" viewBox="0 0 24 23" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"></path>
+        <path d="M12 20v-6"></path>
+        <path d="M12 8h.01"></path>
+      </svg>
+      <span>Settings</span>
+    </div>
+  </div>
+
+  <main>
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-label">CPU Usage</div>
+        <div class="stat-value">72%</div>
+        <div class="stat-delta"><svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 12l5 5l10-10"></path>
+        </svg> +3%</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Memory</div>
+        <div class="stat-value">3.2GB</div>
+        <div class="stat-delta"><svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 12l5 5l10-10"></path>
+        </svg> +0.5GB</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Disk</div>
+        <div class="stat-value">68%</div>
+        <div class="stat-delta"><svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 12l5 5l10-10"></path>
+        </svg> +2%</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Network</div>
+        <div class="stat-value">1.2GB</div>
+        <div class="stat-delta"><svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 12l5 5l10-10"></path>
+        </svg> +500MB</div>
+      </div>
+    </div>
+
+    <div class="chart-container">
+      <div class="chart">
+        <div class="chart-axis">
+          <div class="label">0</div>
+          <div class="label">1</div>
+          <div class="label">2</div>
+          <div class="label">3</div>
+          <div class="label">4</div>
+          <div class="label">5</div>
+        </div>
+        <div class="chart-grid">
+          <line x1="0" y1="100" x2="100%" y2="100"></line>
+          <line x1="0" y1="80" x2="100%" y2="80"></line>
+          <line x1="0" y1="60" x2="100%" y2="60"></line>
+          <line x1="0" y1="40" x2="100%" y2="40"></line>
+          <line x1="0" y1="20" x2="100%" y2="20"></line>
+          <line x1="0" y1="0" x2="100%" y2="0"></line>
+        </div>
+        <svg class="chart-line">
+          <path d="M0,100 L20,80 L40,60 L60,40 L80,20 L100,0"></path>
+        </svg>
+        <svg class="chart-point">
+          <circle cx="100" cy="0" r="4"></circle>
+        </svg>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Recent Alerts</h2>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Severity</th>
+            <th>Message</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>15:32</td>
+            <td class="status green"><span class="dot"></span> Info</td>
+            <td>High CPU usage detected</td>
+          </tr>
+          <tr>
+            <td>15:25</td>
+            <td class="status orange"><span class="dot"></span> Warning</td>
+            <td>Disk usage at 85%</td>
+          </tr>
+          <tr>
+            <td>15:18</td>
+            <td class="status red"><span class="dot"></span> Critical</td>
+            <td>Memory usage at 95%</td>
+          </tr>
+          <tr>
+            <td>15:10</td>
+            <td class="status green"><span class="dot"></span> Info</td>
+            <td>Network traffic spiked</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <p>Sentinel Dashboard © 2023</p>
+  </footer>
+</body>
+</html>

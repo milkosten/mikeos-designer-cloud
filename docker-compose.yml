@@ -1,0 +1,56 @@
+# mikeos-designer-cloud on 242 — the AI harness behind designer.osmike.com.
+#
+# App + its OWN Postgres, both on the shared caddy network (deploy_default). The
+# generated static sites are written to SITES_DIR, mounted from a host dir so Caddy
+# can serve them directly at designer.osmike.com/<id>/ (see DEPLOY.md). Project rows
+# (small metadata + pages jsonb) live in this service's Postgres; the DB is tiny, but
+# the host bind-mount for the sites lives on /data. Generation is GPU-bound (the shared
+# free Ollama), so this box does very little CPU work of its own.
+services:
+  mikeos-designer-db:
+    image: postgres:18
+    container_name: mikeos-designer-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: mikeos
+      POSTGRES_PASSWORD: ${DESIGNER_DB_PASSWORD:-mikeos_designer_local}
+      POSTGRES_DB: mikeos_designer
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - /data/mikeos-designer/pg:/var/lib/postgresql/data
+    networks: [deploy_default]
+    mem_limit: 1g
+    cpus: 1
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mikeos -d mikeos_designer"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  mikeos-designer:
+    build: .
+    image: mikeos-designer:latest
+    container_name: mikeos-designer
+    restart: unless-stopped
+    depends_on:
+      mikeos-designer-db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://mikeos:${DESIGNER_DB_PASSWORD:-mikeos_designer_local}@mikeos-designer-db:5432/mikeos_designer
+      OLLAMA_GPU_URL: ${OLLAMA_GPU_URL:-ollama://mikeos:uB49VXwMDy7R2JE0H7mI@81.8.177.182:11443}
+      ACCOUNT_OSMIKE_ISSUER: https://account.osmike.com
+      # identity.py's baked default is fine, but pin it explicitly.
+      MIKEOSCOMPUTERS_URL: https://account.osmike.com
+      SITES_DIR: /data/sites
+      PUBLIC_BASE: https://designer.osmike.com
+      CORS_ORIGINS: https://designer.osmike.com
+    volumes:
+      # Caddy serves the generated sites straight from this same host dir.
+      - /data/mikeos-designer/sites:/data/sites
+    networks: [deploy_default]
+    mem_limit: 1g
+    cpus: 2
+
+networks:
+  deploy_default:
+    external: true
