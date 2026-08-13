@@ -13,9 +13,10 @@ The OpenRouter key is scoped to this service's env only — never committed, nev
 """
 import asyncio
 import base64
+import json
 import logging
 import os
-from typing import Any, Dict, List, Optional
+from typing import Any, AsyncIterator, Dict, List, Optional
 
 import httpx
 
@@ -178,3 +179,104 @@ async def chat(
                 await asyncio.sleep(min(30.0, 3.0 * (2 ** attempt)))
 
     raise RuntimeError(f"GPU call failed after {max_retries} attempts: {last_err}")
+
+
+# --- streaming -------------------------------------------------------------
+async def _openrouter_stream(messages: List[Dict[str, Any]], temperature: float,
+                             num_predict: int, timeout: float) -> AsyncIterator[str]:
+    """Stream content deltas from OpenRouter (Kimi). Yields text chunks as they arrive."""
+    or_max = 2000 if num_predict <= 1024 else max(int(num_predict), 12000)
+    body: Dict[str, Any] = {
+        "model": LLM_MODEL,
+        "messages": messages,
+        "temperature": temperature,
+        "max_tokens": or_max,
+        "stream": True,
+        "reasoning": {"enabled": False},
+        "provider": {"sort": "throughput"},
+    }
+    headers = {
+        "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+        "Content-Type": "application/json",
+        "HTTP-Referer": "https://designer.osmike.com",
+        "X-Title": "MikeOS Designer",
+    }
+    async with httpx.AsyncClient(timeout=timeout) as client:
+        async with client.stream("POST", OPENROUTER_URL, json=body, headers=headers) as resp:
+            resp.raise_for_status()
+            async for line in resp.aiter_lines():
+                if not line or not line.startswith("data:"):
+                    continue
+                payload = line[len("data:"):].strip()
+                if payload == "[DONE]":
+                    break
+                try:
+                    data = json.loads(payload)
+                except Exception:
+                    continue
+                if data.get("error"):
+                    raise RuntimeError(str(data["error"]))
+                delta = (((data.get("choices") or [{}])[0] or {}).get("delta") or {})
+                chunk = delta.get("content")
+                if chunk:
+                    yield chunk
+
+
+async def _ollama_stream(messages: List[Dict[str, Any]], temperature: float,
+                         num_ctx: int, num_predict: int, timeout: float,
+                         keep_alive: str) -> AsyncIterator[str]:
+    """Stream content deltas from Ollama (newline-delimited JSON). Yields text chunks."""
+    base, headers = _endpoint()
+    body: Dict[str, Any] = {
+        "model": TEXT_MODEL,
+        "messages": messages,
+        "stream": True,
+        "think": False,
+        "keep_alive": keep_alive,
+        "options": {
+            "temperature": temperature,
+            "num_ctx": num_ctx,
+            "num_predict": num_predict,
+        },
+    }
+    async with _gpu_sem:
+        async with httpx.AsyncClient(timeout=timeout, verify=False) as client:
+            async with client.stream("POST", f"{base}/api/chat", json=body,
+                                     headers=headers) as resp:
+                resp.raise_for_status()
+                async for line in resp.aiter_lines():
+                    line = line.strip()
+                    if not line:
+                        continue
+                    try:
+                        data = json.loads(line)
+                    except Exception:
+                        continue
+                    if data.get("error"):
+                        raise RuntimeError(str(data["error"]))
+                    chunk = (data.get("message") or {}).get("content")
+                    if chunk:
+                        yield chunk
+                    if data.get("done"):
+                        break
+
+
+async def stream_chat(
+    messages: List[Dict[str, Any]],
+    *,
+    temperature: float = 0.4,
+    num_ctx: int = 8192,
+    num_predict: int = 8192,
+    timeout: float = 420.0,
+    keep_alive: str = "30m",
+) -> AsyncIterator[str]:
+    """Stream a chat completion, yielding content deltas as they arrive. Routes to
+    OpenRouter/Kimi when configured, else Ollama. On a stream error, callers should treat
+    the accumulated text as the (possibly partial) result — the harness re-sanitizes it."""
+    if OPENROUTER_API_KEY:
+        async for chunk in _openrouter_stream(messages, temperature, num_predict, timeout):
+            yield chunk
+    else:
+        async for chunk in _ollama_stream(messages, temperature, num_ctx, num_predict,
+                                          timeout, keep_alive):
+            yield chunk

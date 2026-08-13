@@ -250,11 +250,64 @@ async def plan(prompt: str, page_type_name: str, style_name: str,
         raise
 
 
+# Extra generation guidance appended when the project opts into interactivity.
+_INTERACTIVE_DIRECTIVE = (
+    "\n\n## INTERACTIVITY (this project is INTERACTIVE)\n"
+    "You MAY include self-contained vanilla JavaScript for REAL interactivity — tabs, "
+    "modals/dialogs, accordions, form validation, a mobile nav toggle, filtering, small "
+    "stateful widgets. Rules: use a single inline `<script>` at the end of `<body>` (or a few "
+    "inline handlers); NO external `src`, NO libraries/CDNs, NO fetch/XHR/WebSocket to any host. "
+    "Keep it small, accessible (keyboard + aria-expanded/aria-selected), and progressive. If the "
+    "project has multiple pages, link them with plain relative `<a href=\"other.html\">` nav.")
+
+
+_EXPAND_SCHEMA: Dict[str, Any] = {
+    "type": "object",
+    "properties": {
+        "subject": {"type": "string"},
+        "audience": {"type": "string"},
+        "purpose": {"type": "string"},
+        "tone": {"type": "string"},
+        "sections": {"type": "array", "items": {"type": "string"}},
+        "description": {"type": "string"},
+    },
+    "required": ["subject", "description"],
+}
+
+
+async def expand_prompt(prompt: str, page_type_hint: str, style_name: str) -> Dict[str, Any]:
+    """EXPANSION step (before planning): turn a raw prompt into a richer creative brief —
+    infer the product/subject, audience, purpose, key sections/content and tone. Fast, cheap,
+    tolerant. Returns {subject,audience,purpose,tone,sections[],description}."""
+    sys = (
+        "You are a creative director interpreting a short website request. Expand it into a "
+        "concise but concrete brief: infer the product/subject, the target audience, the "
+        "purpose of the site, the key sections/content it should include, and the tone of voice. "
+        "Be specific and plausible — invent a believable brand/subject if the request is vague. "
+        "Do NOT write HTML. Respond with JSON only: "
+        '{"subject","audience","purpose","tone","sections":[...],"description"}. '
+        "`description` is a rich 2-4 sentence paragraph a designer can build from.")
+    user = (f"Request: {prompt}\n"
+            f"Intended kind of page: {page_type_hint or 'auto'}\n"
+            f"Visual style: {style_name}\n\nProduce the brief JSON now.")
+    try:
+        out = await gpu.chat(
+            [{"role": "system", "content": sys}, {"role": "user", "content": user}],
+            schema=_EXPAND_SCHEMA, temperature=0.5, num_predict=1200)
+        data = json.loads(out)
+        if isinstance(data, dict) and data.get("description"):
+            return data
+    except Exception as e:
+        logger.warning("prompt expansion failed (%s); using raw prompt", e)
+    return {"subject": "", "description": prompt}
+
+
 async def generate_page(user_prompt: str, plan_spec: Dict[str, Any],
                         page: Dict[str, Any], page_type_name: str, structure_body: str,
                         style_name: str, style_body: str,
-                        page_list: List[str]) -> str:
-    """GENERATE step — one self-contained HTML page via system_generate.md."""
+                        page_list: List[str], interactive: bool = False,
+                        on_token=None) -> str:
+    """GENERATE step — one self-contained HTML page via system_generate.md (streamed)."""
     file_name = page.get("file", "index.html")
     # Inject the plan's per-page content so the page follows the plan, not just the prompt.
     plan_note = json.dumps({"brand": plan_spec.get("brand"),
@@ -273,13 +326,39 @@ async def generate_page(user_prompt: str, plan_spec: Dict[str, Any],
         .replace("{{USER_PROMPT}}",
                  f"{user_prompt}\n\nBUILD PLAN for this page (follow it):\n{plan_note}")
     )
-    content = await gpu.chat(
-        [{"role": "system", "content": filled},
-         {"role": "user", "content":
-             f"Produce the complete self-contained HTML document for `{file_name}` now."}],
-        temperature=0.4, num_predict=8192,   # lower temp -> more consistent delivery
-    )
+    if interactive:
+        filled += _INTERACTIVE_DIRECTIVE
+    messages = [
+        {"role": "system", "content": filled},
+        {"role": "user", "content":
+            f"Produce the complete self-contained HTML document for `{file_name}` now."}]
+    content = await _stream_collect(messages, file_name, on_token,
+                                    temperature=0.4, num_predict=8192)
     return extract_html(content)
+
+
+async def _stream_collect(messages, file_name, on_token, *, temperature, num_predict) -> str:
+    """Stream a generation, forwarding raw deltas to on_token(file, delta), and return the
+    accumulated text. Falls back to a non-streamed call if streaming fails mid-flight."""
+    parts: List[str] = []
+    try:
+        async for delta in gpu.stream_chat(messages, temperature=temperature,
+                                           num_predict=num_predict):
+            parts.append(delta)
+            if on_token and delta:
+                try:
+                    on_token(file_name, delta)
+                except Exception:  # a slow/broken consumer must not kill generation
+                    pass
+    except Exception as e:  # network / provider stream error -> fall back to buffered call
+        if parts:
+            logger.warning("stream for %s errored after %d chunks (%s); using partial",
+                           file_name, len(parts), e)
+            return "".join(parts)
+        logger.warning("stream for %s failed (%s); falling back to buffered chat",
+                       file_name, e)
+        return await gpu.chat(messages, temperature=temperature, num_predict=num_predict)
+    return "".join(parts)
 
 
 async def repair(html: str, reason: str) -> str:
@@ -296,46 +375,65 @@ async def repair(html: str, reason: str) -> str:
     return extract_html(content)
 
 
+def _hard_problems(cleaned: str, removed: List[str]) -> List[str]:
+    """Only HARD problems justify a GPU repair round — everything soft/stylistic is already
+    fixed deterministically by autofix + style_tokens.enforce, so we do NOT spend a GPU round
+    on it. Hard = sanitizer removed disallowed content, a broken document shell, no <h1>, or
+    duplicate ids."""
+    problems: List[str] = []
+    if has_violation(removed):
+        problems.append("removed disallowed content: " + ", ".join(sorted(set(removed))))
+    low = cleaned.lower()
+    if "<!doctype" not in low or "</html>" not in low:
+        problems.append("incomplete document (missing <!doctype>/</html>)")
+    if len(re.findall(r"<h1[\s>]", low)) == 0:
+        problems.append("no <h1> (the lead headline must be the single h1)")
+    ids = re.findall(r'\bid=["\']([^"\']+)["\']', cleaned)
+    dupes = sorted({i for i in ids if ids.count(i) > 1})
+    if dupes:
+        problems.append("duplicate id(s): " + ", ".join(dupes[:6]))
+    return problems
+
+
 async def build_page(user_prompt: str, plan_spec: Dict[str, Any], page: Dict[str, Any],
                      page_type_name: str, structure_body: str, style_name: str,
-                     style_body: str, page_list: List[str], progress=None) -> Dict[str, str]:
+                     style_body: str, page_list: List[str], progress=None,
+                     interactive: bool = False, on_token=None) -> Dict[str, str]:
     """Full per-page pipeline: generate -> sanitize -> autofix -> repair? -> re-check."""
     emit = progress or (lambda *a, **k: None)
     file_name = page.get("file", "index.html")
     emit("Designing the page", file_name)
     raw = await generate_page(user_prompt, plan_spec, page, page_type_name,
-                              structure_body, style_name, style_body, page_list)
-    cleaned, removed = sanitize_html(raw)
+                              structure_body, style_name, style_body, page_list,
+                              interactive=interactive, on_token=on_token)
+    cleaned, removed = sanitize_html(raw, interactive)
     cleaned = autofix(cleaned, style_name, page_type_name)   # deterministic repairs first
     cleaned = style_tokens.enforce(cleaned, style_name)      # lock the style palette/type/font
     emit("Checking the design", file_name)
 
-    # Closed-loop QA: quality gate + design linter -> targeted GPU repair -> autofix -> re-check.
-    MAX_ROUNDS = 2
+    # Closed-loop QA — but only for HARD problems (Kimi output is usually clean; the soft/style
+    # findings are already fixed deterministically). One repair round at most.
+    MAX_ROUNDS = 1
     for rnd in range(MAX_ROUNDS):
-        _ok, issues = _quality_ok(cleaned)
-        findings = analyze(cleaned, style_name, page_type_name)
-        problems: List[str] = list(issues) + list(findings)
-        if has_violation(removed):
-            problems.insert(0, "removed disallowed content: " + ", ".join(sorted(set(removed))))
+        problems = _hard_problems(cleaned, removed)
         if not problems:
             break
         reason = "; ".join(problems)
         emit("Polishing the design", file_name)
-        logger.info("repair round %d for %s: %s", rnd + 1, page.get("file"), reason)
+        logger.info("repair round %d for %s: %s", rnd + 1, file_name, reason)
         try:
             repaired = await repair(cleaned, reason)
         except Exception as e:
-            logger.warning("repair failed for %s (keeping current): %s", page.get("file"), e)
+            logger.warning("repair failed for %s (keeping current): %s", file_name, e)
             break
         if repaired and "</html>" in repaired.lower():
-            cleaned, removed = sanitize_html(repaired)
+            cleaned, removed = sanitize_html(repaired, interactive)
             cleaned = autofix(cleaned, style_name, page_type_name)
             cleaned = style_tokens.enforce(cleaned, style_name)
         else:
             break
 
-    return {"file": page.get("file", "index.html"), "html": cleaned}
+    return {"file": file_name, "html": cleaned}
 
 
 _CLASSIFY_SCHEMA: Dict[str, Any] = {
@@ -371,55 +469,182 @@ async def classify_page_type(prompt: str) -> str:
         return "Landing"
 
 
+_EDIT_SYSTEM = (
+    "You are editing an existing self-contained HTML page. Apply the user's change and "
+    "return the COMPLETE updated document (start `<!doctype html>`, end `</html>`, no "
+    "commentary, no fences). Change as little as possible; keep all other markup, styles, "
+    "and content identical. The page must stay fully self-contained: no external resources.")
+
+
+async def edit_page(current_html: str, instruction: str, style_name: str,
+                    page_type_name: str = "", *, interactive: bool = False,
+                    selector: Optional[str] = None, outer_html: Optional[str] = None,
+                    file_name: str = "index.html", on_token=None) -> str:
+    """FAST targeted edit — ONE streamed model call that rewrites this single page applying
+    the change minimally. No plan, no multi-page. Returns the sanitized+enforced HTML."""
+    focus = ""
+    if outer_html:
+        focus = ("\n\nFocus your change on THIS element (leave the rest of the page "
+                 f"untouched):\n{outer_html[:3000]}")
+    elif selector:
+        focus = f"\n\nThe user is pointing at the element matching CSS selector `{selector}`."
+    if interactive:
+        focus += ("\n\nInline vanilla JavaScript is allowed on this page (no external src, no "
+                  "network) — keep or add small interactivity as needed.")
+    user = (f"Current page (`{file_name}`):\n{current_html}\n\n"
+            f"Change to apply: {instruction}{focus}\n\nReturn the full updated document only.")
+    messages = [{"role": "system", "content": _EDIT_SYSTEM},
+                {"role": "user", "content": user}]
+    content = await _stream_collect(messages, file_name, on_token,
+                                    temperature=0.3, num_predict=8192)
+    html = extract_html(content)
+    cleaned, _removed = sanitize_html(html, interactive)
+    cleaned = autofix(cleaned, style_name, page_type_name)
+    cleaned = style_tokens.enforce(cleaned, style_name)
+    return cleaned
+
+
+def _brief_from_plan(plan_spec: Dict[str, Any], enriched: Dict[str, Any]) -> Dict[str, Any]:
+    """The stored `brief` = the plan spec (brand/tagline/tone/pages/sections) PLUS the
+    enriched interpretation from the expansion step, so the UI can show + edit it."""
+    brief = dict(plan_spec)
+    brief["enriched"] = enriched
+    return brief
+
+
+def _hero_keywords(plan_spec: Dict[str, Any]) -> str:
+    """Keywords for a hero stock image, from the brand + hero section copy."""
+    brand = (plan_spec.get("brand") or {})
+    parts = [brand.get("name", ""), plan_spec.get("type_hint", "")]
+    for page in (plan_spec.get("pages") or []):
+        for sec in (page.get("sections") or []):
+            if "hero" in (sec.get("id", "") + sec.get("purpose", "")).lower():
+                parts.append(sec.get("copy", "")[:120])
+                break
+        break
+    words = re.findall(r"[A-Za-z]{4,}", " ".join(p for p in parts if p))
+    stop = {"with", "that", "this", "your", "from", "have", "will", "into", "page", "hero",
+            "landing", "website", "product", "section", "modern", "clean"}
+    keep = [w.lower() for w in words if w.lower() not in stop][:3]
+    return ",".join(keep) or (brand.get("name", "") or "abstract")
+
+
+async def _maybe_inject_hero_image(pages: List[Dict[str, str]],
+                                   plan_spec: Dict[str, Any]) -> None:
+    """Best-effort: if the plan marks a hero/photo slot, fetch ONE relevant free image and
+    inline it as a data: URI CSS background variable (`--hero-image`) on the first page, so a
+    hero that uses `background-image: var(--hero-image)` gets a real photo. Degrades to a
+    no-op on any failure — never breaks generation."""
+    if not pages:
+        return
+    plan_txt = json.dumps(plan_spec).lower()
+    if not any(k in plan_txt for k in ("hero", "photo", "image", "cover")):
+        return
+    try:
+        from server import chrome
+        data_uri = await chrome.fetch_image_data_uri(_hero_keywords(plan_spec))
+    except Exception as e:  # noqa: BLE001
+        logger.info("hero image step skipped: %s", e)
+        return
+    if not data_uri:
+        return
+    html = pages[0].get("html", "")
+    idx = html.lower().rfind("</style>")
+    if idx == -1:
+        return
+    inject = f"\n:root{{--hero-image:url('{data_uri}');}}\n"
+    pages[0]["html"] = html[:idx] + inject + html[idx:]
+
+
 async def build_project(prompt: str, page_type: str, style: str,
                         edit_pages: Optional[List[Dict[str, str]]] = None,
                         instruction: Optional[str] = None,
-                        progress=None) -> Tuple[Dict[str, Any], List[Dict[str, str]]]:
-    """Run the whole pipeline. Returns (plan_spec, pages[{file,html}]).
+                        progress=None, interactive: bool = False, on_token=None,
+                        from_brief: Optional[Dict[str, Any]] = None,
+                        images: bool = False,
+                        ) -> Tuple[Dict[str, Any], List[Dict[str, str]]]:
+    """Run the whole pipeline. Returns (brief_spec, pages[{file,html}]).
 
-    When `edit_pages`/`instruction` are given (refine flow), the plan is asked to
-    revise the existing pages per the instruction and each page is regenerated.
-    `progress(stage, detail)` is called as each stage begins (for live UI updates).
+    Normal flow: expand the prompt -> emit `brief` -> plan -> generate each page (streamed).
+    When `edit_pages`/`instruction` are given (legacy refine flow), the plan revises the
+    existing pages per the instruction. When `from_brief` is given (PUT brief / restyle),
+    expansion AND planning are skipped and the brief IS the plan — same content, regenerated
+    (with a possibly new style). `progress(stage, detail)` / `on_token(file, delta)` drive the
+    live UI.
     """
     emit = progress or (lambda *a, **k: None)
     style_name, style_body = style_directive(style)
-    # Resolve the page type: infer it from the prompt when the caller didn't pick one.
-    if not page_type or page_type.strip().lower() in ("auto", ""):
-        emit("Understanding your request", "")
-        resolved = await classify_page_type(prompt or instruction or "")
-        page_type_name, structure_body = page_structure(resolved)
-        emit("Detected page type", page_type_name)
+
+    if from_brief is not None:
+        # Reuse the edited/prior brief as the plan verbatim (content-vs-design iteration).
+        plan_spec = dict(from_brief)
+        enriched = plan_spec.get("enriched") or {}
+        pt = plan_spec.get("page_type") or page_type
+        if not pt or str(pt).strip().lower() in ("auto", ""):
+            pt = "Landing"
+        page_type_name, structure_body = page_structure(pt)
+        plan_spec["page_type"] = page_type_name
+        emit("Planning the layout and content", "")
     else:
-        page_type_name, structure_body = page_structure(page_type)
+        # Resolve the page type: infer it from the prompt when the caller didn't pick one.
+        if not page_type or page_type.strip().lower() in ("auto", ""):
+            emit("Understanding your request", "")
+            resolved = await classify_page_type(prompt or instruction or "")
+            page_type_name, structure_body = page_structure(resolved)
+            emit("Detected page type", page_type_name)
+        else:
+            emit("Understanding your request", "")
+            page_type_name, structure_body = page_structure(page_type)
 
-    effective_prompt = prompt
-    if instruction:
-        existing = "\n\n".join(
-            f"[current page {p['file']}]\n{p.get('html','')[:4000]}" for p in (edit_pages or [])
-        )
-        effective_prompt = (
-            f"{prompt}\n\nThe user wants to REFINE the existing site with this instruction:\n"
-            f"{instruction}\n\nKeep the same subject/brand and page set unless the instruction "
-            f"says otherwise. Existing pages (truncated) for reference:\n{existing}"
-        )
+        # EXPANSION — enrich the raw prompt into a creative brief (skipped on the legacy
+        # instruction/refine flow, which already has a subject to preserve).
+        enriched: Dict[str, Any] = {}
+        effective_prompt = prompt
+        if instruction:
+            existing = "\n\n".join(
+                f"[current page {p['file']}]\n{p.get('html','')[:4000]}"
+                for p in (edit_pages or []))
+            effective_prompt = (
+                f"{prompt}\n\nThe user wants to REFINE the existing site with this instruction:\n"
+                f"{instruction}\n\nKeep the same subject/brand and page set unless the "
+                f"instruction says otherwise. Existing pages (truncated):\n{existing}")
+        else:
+            enriched = await expand_prompt(prompt, page_type_name, style_name)
+            desc = enriched.get("description") or prompt
+            effective_prompt = f"{prompt}\n\nInterpreted brief:\n{desc}"
+            secs = enriched.get("sections") or []
+            if secs:
+                effective_prompt += "\nKey sections to include: " + ", ".join(secs)
 
-    emit("Planning the layout and content", "")
-    plan_spec = await plan(effective_prompt, page_type_name, style_name,
-                           structure_body, style_body)
-    plan_spec["page_type"] = page_type_name   # surface the (possibly inferred) type
+        emit("Planning the layout and content", "")
+        plan_spec = await plan(effective_prompt, page_type_name, style_name,
+                               structure_body, style_body)
+        plan_spec["page_type"] = page_type_name   # surface the (possibly inferred) type
+        # Emit the brief early so the UI can show the interpretation before pages stream.
+        brief_spec = _brief_from_plan(plan_spec, enriched)
+        emit("__brief__", brief_spec)   # special stage the SSE layer turns into a `brief` event
+
     brand = (plan_spec.get("brand") or {}).get("name")
     if brand:
         emit("Planned", brand)
     pages_spec = plan_spec.get("pages") or [{"file": "index.html"}]
     page_list = [p.get("file", "index.html") for p in pages_spec]
+    build_prompt = prompt if from_brief is not None else effective_prompt
 
     pages: List[Dict[str, str]] = []
     for i, page in enumerate(pages_spec):
         if len(pages_spec) > 1:
             emit("Building page", f"{i + 1}/{len(pages_spec)}: {page.get('file', 'index.html')}")
-        built = await build_page(effective_prompt, plan_spec, page, page_type_name,
+        built = await build_page(build_prompt, plan_spec, page, page_type_name,
                                  structure_body, style_name, style_body, page_list,
-                                 progress=progress)
+                                 progress=progress, interactive=interactive, on_token=on_token)
         pages.append(built)
 
-    return plan_spec, pages
+    if images:
+        try:
+            await _maybe_inject_hero_image(pages, plan_spec)
+        except Exception as e:  # noqa: BLE001 — never let the optional image step break a build
+            logger.info("hero image injection failed: %s", e)
+
+    result_brief = plan_spec if from_brief is not None else _brief_from_plan(plan_spec, enriched)
+    return result_brief, pages

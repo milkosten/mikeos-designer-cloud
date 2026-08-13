@@ -58,15 +58,24 @@ def _strip_remote_css_urls(css: str, removed: List[str]) -> str:
     return css
 
 
-def sanitize_html(html: str) -> Tuple[str, List[str]]:
-    """Enforce the self-contained contract. Returns (cleaned_html, removed[])."""
+def sanitize_html(html: str, interactive: bool = False) -> Tuple[str, List[str]]:
+    """Enforce the self-contained contract. Returns (cleaned_html, removed[]).
+
+    When `interactive` is True, INLINE `<script>` (no `src`) and inline `on*=` handlers
+    are ALLOWED (opt-in vanilla JS). External resource loads are still stripped in BOTH
+    modes: `<script src>`, external `<link>`, `@import` URLs, remote `src`/`href`/`url()`
+    (except `data:`), external `<iframe>`/`<embed>`/`<object>`, and `<base>`."""
     removed: List[str] = []
     soup = BeautifulSoup(html, "lxml")
 
-    # 1. <script> — remove entirely.
+    # 1. <script> — drop entirely, OR (interactive) keep only inline scripts, dropping any
+    #    with an external `src`. `javascript:` in a src is treated as external/blocked too.
     for tag in soup.find_all("script"):
+        src = tag.get("src", "")
+        if interactive and not src:
+            continue  # inline script allowed in interactive mode
         tag.decompose()
-        removed.append("script")
+        removed.append("script[src]" if src else "script")
 
     # 2. <base> — would change relative URL resolution.
     for tag in soup.find_all("base"):
@@ -98,8 +107,10 @@ def sanitize_html(html: str) -> Tuple[str, List[str]]:
         attrs = dict(tag.attrs)
         for attr, val in attrs.items():
             la = attr.lower()
-            # inline event handlers on*=
+            # inline event handlers on*= — stripped unless interactive JS is opted in.
             if la.startswith("on"):
+                if interactive:
+                    continue
                 del tag.attrs[attr]
                 removed.append(f"handler:{la}")
                 continue

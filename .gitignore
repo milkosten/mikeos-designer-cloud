@@ -28,6 +28,7 @@ env/
 # Data / generated sites / local DB
 data/
 sites/
+out/
 *.db
 *.sqlite
 *.sqlite3

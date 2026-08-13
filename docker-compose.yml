@@ -46,6 +46,10 @@ services:
       SITES_DIR: /data/sites
       PUBLIC_BASE: https://designer.osmike.com
       CORS_ORIGINS: https://designer.osmike.com
+      # chrome-pool — project thumbnails + best-effort hero stock images (all best-effort).
+      CHROME_POOL_URL: ${CHROME_POOL_URL:-https://chrome-pool.osmike.com}
+      CHROME_POOL_USER: ${CHROME_POOL_USER:-mikeos}
+      CHROME_POOL_PASS: ${CHROME_POOL_PASS:-uB49VXwMDy7R2JE0H7mI}
     volumes:
       # Caddy serves the generated sites straight from this same host dir.
       - /data/mikeos-designer/sites:/data/sites
