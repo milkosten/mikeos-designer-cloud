@@ -183,6 +183,12 @@ Make grounded choices instead. Surprise slightly where it serves the subject.
    rules; Dark/Terminal ⇒ mono + glow). Palette alone is not the style.
 10. **Generous CTAs.** Buttons get real padding (≈`0.7em 1.4em`) and a clear primary-vs-secondary
     distinction.
+11. **Use the provided tokens for EVERYTHING — never hardcode a color or font.** Copy the given
+    `:root` block verbatim and reference it everywhere: `background:var(--bg)`, `color:var(--ink)`,
+    surfaces `var(--surface)`, secondary text `var(--muted)`, borders `var(--line)`, accents
+    `var(--accent)`/`var(--accent-2)`, `font-family:var(--font)`, radius `var(--radius)`, sizing
+    `var(--step-*)`/`var(--s*)`. `body` MUST be `background:var(--bg); color:var(--ink);
+    font-family:var(--font)`. A hardcoded `#hex` or a font name outside `:root` is a defect.
 
 ## BEFORE YOU FINISH — self-audit
 Silently verify, and fix any "no":
@@ -212,8 +218,14 @@ Then output the final HTML only.
 {{PAGE_STRUCTURE}}
 
 - **Visual style:** {{STYLE_NAME}}
-- **Style directive (follow precisely):**
+- **Style directive (follow precisely for LAYOUT, texture and signature):**
 {{STYLE_DIRECTIVE}}
+
+- **Design tokens — put this EXACT block in `:root` and use ONLY these variables for every
+  color, font and size. Do NOT invent a palette or hardcode any hex/font outside `:root`:**
+```
+{{ROOT_TOKENS}}
+```
 
 - **This page is:** `{{FILE_NAME}}`  ·  **Project pages:** {{PAGE_LIST}}
   (link between pages with plain relative `<a href="other.html">` — no JS routing)

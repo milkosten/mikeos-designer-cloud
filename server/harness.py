@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 from server import gpu
+from server import style_tokens
 from server.sanitize import sanitize_html, has_violation
 from server.analyze import analyze, autofix
 
@@ -266,6 +267,7 @@ async def generate_page(user_prompt: str, plan_spec: Dict[str, Any],
         .replace("{{PAGE_STRUCTURE}}", structure_body)
         .replace("{{STYLE_NAME}}", style_name)
         .replace("{{STYLE_DIRECTIVE}}", style_body)
+        .replace("{{ROOT_TOKENS}}", style_tokens.root_css(style_name))
         .replace("{{FILE_NAME}}", file_name)
         .replace("{{PAGE_LIST}}", ", ".join(page_list) or file_name)
         .replace("{{USER_PROMPT}}",
@@ -275,7 +277,7 @@ async def generate_page(user_prompt: str, plan_spec: Dict[str, Any],
         [{"role": "system", "content": filled},
          {"role": "user", "content":
              f"Produce the complete self-contained HTML document for `{file_name}` now."}],
-        temperature=0.8, num_predict=8192,
+        temperature=0.4, num_predict=8192,   # lower temp -> more consistent delivery
     )
     return extract_html(content)
 
@@ -305,6 +307,7 @@ async def build_page(user_prompt: str, plan_spec: Dict[str, Any], page: Dict[str
                               structure_body, style_name, style_body, page_list)
     cleaned, removed = sanitize_html(raw)
     cleaned = autofix(cleaned, style_name, page_type_name)   # deterministic repairs first
+    cleaned = style_tokens.enforce(cleaned, style_name)      # lock the style palette/type/font
     emit("Checking the design", file_name)
 
     # Closed-loop QA: quality gate + design linter -> targeted GPU repair -> autofix -> re-check.
@@ -328,6 +331,7 @@ async def build_page(user_prompt: str, plan_spec: Dict[str, Any], page: Dict[str
         if repaired and "</html>" in repaired.lower():
             cleaned, removed = sanitize_html(repaired)
             cleaned = autofix(cleaned, style_name, page_type_name)
+            cleaned = style_tokens.enforce(cleaned, style_name)
         else:
             break
 

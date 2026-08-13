@@ -8,6 +8,19 @@ not copy them literally.
 
 ---
 
+## Modern
+- **Feeling:** clean, spacious, contemporary product/SaaS. Confident and friendly, not flashy.
+- **Palette:** light and airy — near-white ground, white surfaces, deep-slate ink, a confident
+  indigo accent with a sky-blue secondary (use the provided tokens; don't invent color).
+- **Type:** system sans, clear scale, medium-to-semibold headings, comfortable readable body.
+- **Layout:** generous whitespace and an airy grid; rounded cards (medium radius) with SOFT,
+  layered shadows and hairline borders; a clean top nav; a strong typographic hero, optionally
+  beside a small framed UI preview built from real HTML/CSS. One focal accent moment.
+- **Signature:** polish through spacing, soft depth and restraint — the accent used sparingly on
+  the primary action and one highlight.
+- **Avoid:** loud full-bleed saturated color blocks, heavy borders, clashing hues, gradients as a
+  crutch, and the generic purple→blue hero. Calm and confident, never Bootstrap-generic.
+
 ## Minimal
 - **Feeling:** calm, Swiss, confident whitespace. Content-first, almost no ornament.
 - **Palette:** near-white tinted bg `#fafaf9`, ink `#1a1a19`, muted `#6b6b66`, ONE quiet

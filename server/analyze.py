@@ -290,4 +290,13 @@ def analyze(html: str, style_name: str = "", page_type: str = "") -> List[str]:
         findings.append(
             "No focus styles: add visible :focus-visible outlines on links/buttons/inputs.")
 
+    # 7) A Pricing page must actually show prices.
+    if "pricing" in (page_type or "").lower():
+        body_txt = re.sub(r"<style.*?</style>", "", html, flags=re.I | re.S)
+        if not re.search(r"[$£€]\s?\d|\b\d+\s?(?:/mo|/month|per month|a month)\b", body_txt, re.I):
+            findings.append(
+                "This is a Pricing page but shows NO prices: every plan tier must have a concrete "
+                "price (e.g. $19/mo), the tiers must differ (distinct feature lists), and each tier "
+                "needs a call-to-action button.")
+
     return findings
