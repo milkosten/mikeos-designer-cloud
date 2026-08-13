@@ -330,7 +330,7 @@ async def create_project_stream(body: CreateBody, user_id: str = Depends(current
         progress, on_token, finish_pages = _make_callbacks(put)
         brief, pages = await harness.build_project(
             body.prompt, body.page_type, body.style, progress=progress, on_token=on_token,
-            interactive=body.interactive, images=body.interactive)
+            interactive=True, images=True)
         finish_pages()
         if not pages:
             put({"type": "error", "message": "generation produced no pages"})

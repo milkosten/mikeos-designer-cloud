@@ -261,13 +261,14 @@ async def plan(prompt: str, page_type_name: str, style_name: str,
 
 # Extra generation guidance appended when the project opts into interactivity.
 _INTERACTIVE_DIRECTIVE = (
-    "\n\n## INTERACTIVITY (this project is INTERACTIVE)\n"
-    "You MAY include self-contained vanilla JavaScript for REAL interactivity — tabs, "
-    "modals/dialogs, accordions, form validation, a mobile nav toggle, filtering, small "
-    "stateful widgets. Rules: use a single inline `<script>` at the end of `<body>` (or a few "
-    "inline handlers); NO external `src`, NO libraries/CDNs, NO fetch/XHR/WebSocket to any host. "
-    "Keep it small, accessible (keyboard + aria-expanded/aria-selected), and progressive. If the "
-    "project has multiple pages, link them with plain relative `<a href=\"other.html\">` nav.")
+    "\n\n## INTERACTIVITY\n"
+    "You MAY include self-contained vanilla JavaScript, but ONLY where it genuinely improves the "
+    "page — real apps and stateful widgets (tabs, modals/dialogs, accordions, form validation, a "
+    "mobile nav toggle, filtering) need it; a static marketing/landing page usually needs little or "
+    "none, so do NOT add gratuitous scripts. Rules when you do: a single inline `<script>` at the end "
+    "of `<body>` (or a few inline handlers); NO external `src`, NO libraries/CDNs, NO fetch/XHR/"
+    "WebSocket to any host. Keep it small, accessible (keyboard + aria-expanded/aria-selected), and "
+    "progressive. Multi-page projects link with plain relative `<a href=\"other.html\">` nav.")
 
 
 def _app_directive(files: List[str], data_model: Optional[Dict[str, Any]]) -> str:
@@ -670,9 +671,11 @@ async def build_project(prompt: str, page_type: str, style: str,
     if not any(p.get("file") == "index.html" for p in pages_spec):
         pages_spec[0]["file"] = "index.html"
     plan_spec["pages"] = pages_spec
-    # A functional app (needs a JS/data layer) always gets JS, regardless of the toggle.
+    # Self-contained JS is ALWAYS allowed (it's sandboxed in the preview and external loads are
+    # stripped either way); the planner/model decide when to use it. needs_app just drives the
+    # frontend-database directive + skips hero images for functional apps.
     needs_app = bool(plan_spec.get("needs_app")) or bool(plan_spec.get("data_model"))
-    interactive = interactive or needs_app
+    interactive = True
     plan_spec["interactive"] = interactive
     page_list = [p.get("file", "index.html") for p in pages_spec]
     build_prompt = prompt if from_brief is not None else effective_prompt
@@ -686,7 +689,7 @@ async def build_project(prompt: str, page_type: str, style: str,
                                  progress=progress, interactive=interactive, on_token=on_token)
         pages.append(built)
 
-    if images:
+    if images and not needs_app:   # hero images for static/marketing pages, never functional apps
         try:
             await _maybe_inject_hero_image(pages, plan_spec)
         except Exception as e:  # noqa: BLE001 — never let the optional image step break a build
