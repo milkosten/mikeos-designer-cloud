@@ -296,12 +296,16 @@ async def repair(html: str, reason: str) -> str:
 
 async def build_page(user_prompt: str, plan_spec: Dict[str, Any], page: Dict[str, Any],
                      page_type_name: str, structure_body: str, style_name: str,
-                     style_body: str, page_list: List[str]) -> Dict[str, str]:
-    """Full per-page pipeline: generate -> sanitize -> repair? -> re-sanitize."""
+                     style_body: str, page_list: List[str], progress=None) -> Dict[str, str]:
+    """Full per-page pipeline: generate -> sanitize -> autofix -> repair? -> re-check."""
+    emit = progress or (lambda *a, **k: None)
+    file_name = page.get("file", "index.html")
+    emit("Designing the page", file_name)
     raw = await generate_page(user_prompt, plan_spec, page, page_type_name,
                               structure_body, style_name, style_body, page_list)
     cleaned, removed = sanitize_html(raw)
     cleaned = autofix(cleaned, style_name, page_type_name)   # deterministic repairs first
+    emit("Checking the design", file_name)
 
     # Closed-loop QA: quality gate + design linter -> targeted GPU repair -> autofix -> re-check.
     MAX_ROUNDS = 2
@@ -314,6 +318,7 @@ async def build_page(user_prompt: str, plan_spec: Dict[str, Any], page: Dict[str
         if not problems:
             break
         reason = "; ".join(problems)
+        emit("Polishing the design", file_name)
         logger.info("repair round %d for %s: %s", rnd + 1, page.get("file"), reason)
         try:
             repaired = await repair(cleaned, reason)
@@ -364,17 +369,22 @@ async def classify_page_type(prompt: str) -> str:
 
 async def build_project(prompt: str, page_type: str, style: str,
                         edit_pages: Optional[List[Dict[str, str]]] = None,
-                        instruction: Optional[str] = None) -> Tuple[Dict[str, Any], List[Dict[str, str]]]:
+                        instruction: Optional[str] = None,
+                        progress=None) -> Tuple[Dict[str, Any], List[Dict[str, str]]]:
     """Run the whole pipeline. Returns (plan_spec, pages[{file,html}]).
 
     When `edit_pages`/`instruction` are given (refine flow), the plan is asked to
     revise the existing pages per the instruction and each page is regenerated.
+    `progress(stage, detail)` is called as each stage begins (for live UI updates).
     """
+    emit = progress or (lambda *a, **k: None)
     style_name, style_body = style_directive(style)
     # Resolve the page type: infer it from the prompt when the caller didn't pick one.
     if not page_type or page_type.strip().lower() in ("auto", ""):
-        page_type_name, structure_body = page_structure(
-            await classify_page_type(prompt or instruction or ""))
+        emit("Understanding your request", "")
+        resolved = await classify_page_type(prompt or instruction or "")
+        page_type_name, structure_body = page_structure(resolved)
+        emit("Detected page type", page_type_name)
     else:
         page_type_name, structure_body = page_structure(page_type)
 
@@ -389,16 +399,23 @@ async def build_project(prompt: str, page_type: str, style: str,
             f"says otherwise. Existing pages (truncated) for reference:\n{existing}"
         )
 
+    emit("Planning the layout and content", "")
     plan_spec = await plan(effective_prompt, page_type_name, style_name,
                            structure_body, style_body)
     plan_spec["page_type"] = page_type_name   # surface the (possibly inferred) type
+    brand = (plan_spec.get("brand") or {}).get("name")
+    if brand:
+        emit("Planned", brand)
     pages_spec = plan_spec.get("pages") or [{"file": "index.html"}]
     page_list = [p.get("file", "index.html") for p in pages_spec]
 
     pages: List[Dict[str, str]] = []
-    for page in pages_spec:
+    for i, page in enumerate(pages_spec):
+        if len(pages_spec) > 1:
+            emit("Building page", f"{i + 1}/{len(pages_spec)}: {page.get('file', 'index.html')}")
         built = await build_page(effective_prompt, plan_spec, page, page_type_name,
-                                 structure_body, style_name, style_body, page_list)
+                                 structure_body, style_name, style_body, page_list,
+                                 progress=progress)
         pages.append(built)
 
     return plan_spec, pages

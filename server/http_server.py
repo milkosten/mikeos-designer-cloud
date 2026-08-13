@@ -4,6 +4,7 @@ Prompt -> website builder. Runs on 242 in Docker (its own Postgres). The prompt 
 under harness/prompts/ are the design brain; this file wires the FastAPI surface around
 the pipeline in server/harness.py.
 """
+import asyncio
 import json
 import logging
 import os
@@ -15,6 +16,7 @@ from typing import Any, Deque, Dict, List, Optional
 import asyncpg
 from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
 from server import db, harness, sites
@@ -180,6 +182,69 @@ async def create_project(body: CreateBody, user_id: str = Depends(current_user_w
         sites.delete_site(site_id)
         raise HTTPException(status_code=500, detail="insert failed")
     return _project_full(row)
+
+
+@app.post("/api/projects/stream")
+async def create_project_stream(body: CreateBody, user_id: str = Depends(current_user_write)):
+    """Same as create_project, but streams stage progress as Server-Sent Events; the final
+    `done` event carries the created project. Each line is `data: {json}\\n\\n` with a
+    `type` of progress | done | error."""
+    _rate_check(user_id)
+    try:
+        harness.style_directive(body.style)
+        if body.page_type and body.page_type.strip().lower() not in ("auto", ""):
+            harness.page_structure(body.page_type)
+    except KeyError as e:
+        raise HTTPException(status_code=400, detail=f"unknown page_type/style: {e}")
+
+    async def event_gen():
+        q: "asyncio.Queue" = asyncio.Queue()
+
+        def progress(stage: str, detail: str = ""):
+            q.put_nowait({"type": "progress", "stage": stage, "detail": detail})
+
+        async def run():
+            try:
+                plan_spec, pages = await harness.build_project(
+                    body.prompt, body.page_type, body.style, progress=progress)
+                if not pages:
+                    q.put_nowait({"type": "error", "message": "generation produced no pages"})
+                    return
+                progress("Publishing", "")
+                title = body.title or (plan_spec.get("brand") or {}).get("name") or "Untitled"
+                site_id = await _fresh_id()
+                sites.write_site(site_id, pages)
+                row = await db.pool().fetchrow(
+                    "INSERT INTO projects (id, user_id, title, page_type, style, prompt, "
+                    " prompt_history, pages, visibility, published) "
+                    "VALUES ($1,$2,$3,$4,$5,$6,$7::jsonb,$8::jsonb,'unlisted',true) RETURNING *",
+                    site_id, user_id, title,
+                    plan_spec.get("page_type") or body.page_type, body.style, body.prompt,
+                    json.dumps([]), json.dumps(pages))
+                if not row:
+                    sites.delete_site(site_id)
+                    q.put_nowait({"type": "error", "message": "insert failed"})
+                    return
+                q.put_nowait({"type": "done", "project": _project_full(row)})
+            except Exception as e:  # noqa: BLE001
+                logger.exception("stream generation failed")
+                q.put_nowait({"type": "error", "message": str(e)})
+            finally:
+                q.put_nowait(None)
+
+        task = asyncio.create_task(run())
+        try:
+            while True:
+                item = await q.get()
+                if item is None:
+                    break
+                yield f"data: {json.dumps(item)}\n\n"
+        finally:
+            await task
+
+    return StreamingResponse(
+        event_gen(), media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no", "Connection": "keep-alive"})
 
 
 @app.post("/api/projects/{site_id}/prompt")
