@@ -5,18 +5,24 @@ do not embed our own design rules. We slice the relevant `## Heading` section ou
 styles.md / page_types.md for the chosen style / page type, fill the {{PLACEHOLDERS}} in
 system_generate.md, and run the GPU (qwen3:8b) once per page.
 """
+import asyncio
 import json
 import logging
+import os
 import re
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
-from server import gpu
+from server import chrome, gpu, sites
 from server import style_tokens
 from server.sanitize import sanitize_html, has_violation
 from server.analyze import analyze, autofix
 
 logger = logging.getLogger(__name__)
+
+# Runtime QA (real-browser console-error loop) bounds.
+MAX_QA_ROUNDS = 2
+_QA_NAV_TIMEOUT = float(os.environ.get("DESIGNER_QA_NAV_TIMEOUT", "40"))
 
 PROMPTS_DIR = Path(__file__).resolve().parent.parent / "harness" / "prompts"
 
@@ -593,6 +599,136 @@ async def _maybe_inject_hero_image(pages: List[Dict[str, str]],
         return
     inject = f"\n:root{{--hero-image:url('{data_uri}');}}\n"
     pages[0]["html"] = html[:idx] + inject + html[idx:]
+
+
+_RUNTIME_FIX_SYSTEM = (
+    "You are fixing runtime JavaScript errors in a self-contained HTML page. The page "
+    "produced these console errors in a real browser:\n{errors}\n\n"
+    "Fix the code so it runs with ZERO console errors — define missing functions, fix the "
+    "syntax error at the reported line, keep everything else identical. The page must stay "
+    "fully self-contained: only inline <script> (no external src), no network. Return the "
+    "COMPLETE corrected HTML only (start `<!doctype html>`, end `</html>`, no commentary, "
+    "no fences).")
+
+
+async def _repair_runtime(html: str, errors: List[str], style_name: str,
+                          page_type_name: str) -> str:
+    """Hand a page + its exact browser console errors to the LLM, then re-clean the result."""
+    sys = _RUNTIME_FIX_SYSTEM.replace("{errors}", "\n".join(f"- {e}" for e in errors))
+    user = ("Here is the current HTML. Return the full corrected document only.\n\n" + html)
+    # The model must re-emit the ENTIRE document, so the completion budget has to comfortably
+    # exceed the page size (a truncated response has no </html> and gets discarded, so the
+    # bug would never get fixed). Scale to the input: ~1 token/3 chars + generous headroom.
+    budget = max(16000, min(48000, int(len(html) / 3) + 8000))
+    content = await gpu.chat(
+        [{"role": "system", "content": sys}, {"role": "user", "content": user}],
+        temperature=0.3, num_predict=budget)
+    fixed = extract_html(content)
+    if not fixed or "</html>" not in fixed.lower():
+        return html   # keep the current page if the model didn't return a document
+    cleaned, _removed = sanitize_html(fixed, True)   # JS pages are interactive
+    cleaned = autofix(cleaned, style_name, page_type_name)
+    cleaned = style_tokens.enforce(cleaned, style_name)
+    return cleaned
+
+
+def _has_script(html: str) -> bool:
+    return "<script" in (html or "").lower()
+
+
+async def runtime_qa(site_id: str, pages: List[Dict[str, str]], style_name: str,
+                     page_type_name: str, progress=None
+                     ) -> Tuple[List[Dict[str, str]], List[str]]:
+    """Runtime QA loop: load the LIVE site in a real headless browser, capture JS console
+    errors + uncaught exceptions the static linter can't see, feed them back to the LLM to
+    fix, and re-test — up to MAX_QA_ROUNDS times.
+
+    chrome-pool has NO console endpoint, so for each round we write WRAPPED copies of ALL
+    pages (with an error collector injected before their scripts) to a fresh temp slug dir
+    under SITES_DIR — live at {PUBLIC_BASE}/<tempid>/<file> so relative nav works — and read
+    `window.__errs` back after loading + exercising the UI.
+
+    Only JS pages (containing `<script`) are tested/repaired. Returns the (possibly repaired)
+    pages and the final list of remaining errors ("file: error"). Best-effort: any failure
+    (chrome-pool unreachable, etc.) logs and returns the pages unchanged so a generation is
+    NEVER failed because QA couldn't run. Always cleans up its temp dir."""
+    emit = progress or (lambda *a, **k: None)
+    js_files = [p.get("file", "index.html") for p in pages if _has_script(p.get("html", ""))]
+    if not js_files:
+        return pages, []   # nothing scriptable to test — skip quickly
+
+    remaining: List[str] = []
+    for rnd in range(MAX_QA_ROUNDS):
+        emit("Testing in a browser", "")
+        temp_id = sites.new_id()
+        errors_by_file: Dict[str, List[str]] = {}
+        try:
+            wrapped = [{"file": p.get("file", "index.html"),
+                        "html": chrome.inject_collector(p.get("html", ""))
+                        if _has_script(p.get("html", "")) else p.get("html", "")}
+                       for p in pages]
+            sites.write_site(temp_id, wrapped)
+            await asyncio.sleep(1.0)   # let Caddy serve the just-written files
+            for f in js_files:
+                url = f"{sites.PUBLIC_BASE}/{temp_id}/{f}"
+                errs = await chrome.console_errors(url, exercise=True,
+                                                   timeout=_QA_NAV_TIMEOUT)
+                if errs:
+                    errors_by_file[f] = errs
+        except Exception as e:  # noqa: BLE001 — QA must never break a generation
+            logger.info("runtime QA round %d aborted for %s: %s", rnd + 1, site_id, e)
+            _safe_delete(temp_id)
+            break
+        finally:
+            _safe_delete(temp_id)
+
+        if not errors_by_file:
+            emit("✓ No console errors", "")
+            return pages, []
+
+        total = sum(len(v) for v in errors_by_file.values())
+        emit("Found console errors, fixing", f"{total} error(s)")
+        logger.info("runtime QA %s round %d: %d error(s) across %d page(s)",
+                    site_id, rnd + 1, total, len(errors_by_file))
+
+        # repair every page that errored
+        changed = False
+        for f, errs in errors_by_file.items():
+            idx = next((i for i, p in enumerate(pages) if p.get("file") == f), None)
+            if idx is None:
+                continue
+            try:
+                fixed = await _repair_runtime(pages[idx].get("html", ""), errs,
+                                              style_name, page_type_name)
+            except Exception as e:  # noqa: BLE001
+                logger.warning("runtime repair failed for %s/%s: %s", site_id, f, e)
+                continue
+            if fixed and fixed != pages[idx].get("html"):
+                pages[idx]["html"] = fixed
+                changed = True
+
+        # re-write the real site so the next round (and the final state) reflects the fixes
+        try:
+            sites.write_site(site_id, pages)
+        except Exception as e:  # noqa: BLE001
+            logger.warning("runtime QA re-write failed for %s: %s", site_id, e)
+
+        remaining = [f"{f}: {e}" for f, errs in errors_by_file.items() for e in errs]
+        if not changed:
+            break   # nothing improved — don't spin another identical round
+
+    if remaining:
+        emit("Fixed most issues", "")
+    else:
+        emit("✓ No console errors", "")
+    return pages, remaining
+
+
+def _safe_delete(temp_id: str) -> None:
+    try:
+        sites.delete_site(temp_id)
+    except Exception as e:  # noqa: BLE001
+        logger.info("temp QA dir cleanup skipped for %s: %s", temp_id, e)
 
 
 async def build_project(prompt: str, page_type: str, style: str,

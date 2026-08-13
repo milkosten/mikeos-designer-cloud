@@ -294,11 +294,42 @@ def _validate_pickers(style: str, page_type: str) -> None:
         raise HTTPException(status_code=400, detail=f"unknown page_type/style: {e}")
 
 
+async def _run_qa(site_id: str, pages: List[Dict[str, str]], style: str,
+                  page_type: str, progress=None) -> List[Dict[str, str]]:
+    """Best-effort runtime QA: load the just-written site in a real browser, capture JS
+    console errors, LLM-repair, re-test. Returns the (possibly repaired) pages — already
+    re-written to disk by runtime_qa. NEVER fails a generation: any error logs + returns
+    the pages unchanged. Bounded so a chrome-pool hang can't stall the response forever."""
+    try:
+        page_type_name = ""
+        try:
+            page_type_name = harness.page_structure(page_type or "")[0]
+        except Exception:
+            page_type_name = page_type or ""
+        style_name = ""
+        try:
+            style_name = harness.style_directive(style or "")[0]
+        except Exception:
+            style_name = style or ""
+        # hard ceiling so a stuck chrome-pool can't hang the request indefinitely
+        qa_pages, remaining = await asyncio.wait_for(
+            harness.runtime_qa(site_id, pages, style_name, page_type_name, progress=progress),
+            timeout=float(os.environ.get("DESIGNER_QA_TOTAL_TIMEOUT", "240")))
+        if remaining:
+            logger.info("runtime QA %s: %d error(s) remain after repair", site_id, len(remaining))
+        return qa_pages
+    except Exception as e:  # noqa: BLE001 — QA is best-effort
+        logger.info("runtime QA skipped for %s: %s", site_id, e)
+        return pages
+
+
 async def _insert_project(user_id: str, body: CreateBody, brief: Dict[str, Any],
-                          pages: List[Dict[str, str]]) -> asyncpg.Record:
+                          pages: List[Dict[str, str]], progress=None) -> asyncpg.Record:
     title = body.title or ((brief.get("brand") or {}).get("name")) or "Untitled"
     site_id = await _fresh_id()
     sites.write_site(site_id, pages)   # write files FIRST so the URL is live immediately
+    pages = await _run_qa(site_id, pages, body.style,
+                          brief.get("page_type") or body.page_type, progress)
     row = await db.pool().fetchrow(
         "INSERT INTO projects (id, user_id, title, page_type, style, prompt, "
         " prompt_history, pages, brief, interactive, visibility, published) "
@@ -345,7 +376,7 @@ async def create_project_stream(body: CreateBody, user_id: str = Depends(current
             put({"type": "error", "message": "generation produced no pages"})
             return
         put({"type": "progress", "stage": "Publishing", "detail": ""})
-        row = await _insert_project(user_id, body, brief, pages)
+        row = await _insert_project(user_id, body, brief, pages, progress=progress)
         put({"type": "done", "project": _project_full(row)})
 
     return await _stream_pipeline(runner)
@@ -353,7 +384,7 @@ async def create_project_stream(body: CreateBody, user_id: str = Depends(current
 
 # ---- fast targeted edit (Phase 2) -----------------------------------------
 async def _apply_edit_and_save(row: asyncpg.Record, file: str, new_html: str,
-                               instruction: str) -> asyncpg.Record:
+                               instruction: str, progress=None) -> asyncpg.Record:
     site_id = row["id"]
     pages = _jsonb(row["pages"], [])
     replaced = False
@@ -365,6 +396,7 @@ async def _apply_edit_and_save(row: asyncpg.Record, file: str, new_html: str,
     if not replaced:
         pages.append({"file": file, "html": new_html})
     sites.write_site(site_id, pages)
+    pages = await _run_qa(site_id, pages, row["style"], row["page_type"] or "", progress)
     history = _jsonb(row["prompt_history"], [])
     history = history + [{"instruction": instruction, "file": file, "at": int(time.time())}]
     updated = await db.pool().fetchrow(
@@ -394,14 +426,15 @@ async def edit_project(site_id: str, body: EditBody,
 
     async def runner(put):
         put({"type": "progress", "stage": "Understanding your request", "detail": ""})
-        _progress, on_token, finish_pages = _make_callbacks(put)
+        progress, on_token, finish_pages = _make_callbacks(put)
         new_html = await harness.edit_page(
             current, body.instruction, row["style"], row["page_type"] or "",
             interactive=interactive, selector=body.selector, outer_html=body.outer_html,
             file_name=file, on_token=on_token)
         finish_pages()
         put({"type": "progress", "stage": "Publishing", "detail": ""})
-        updated = await _apply_edit_and_save(row, file, new_html, body.instruction)
+        updated = await _apply_edit_and_save(row, file, new_html, body.instruction,
+                                             progress=progress)
         put({"type": "done", "project": _project_full(updated)})
 
     return await _stream_pipeline(runner)
@@ -448,6 +481,8 @@ async def _regenerate(row: asyncpg.Record, brief: Dict[str, Any], style: str,
         return
     put({"type": "progress", "stage": "Publishing", "detail": ""})
     sites.write_site(site_id, pages)
+    pages = await _run_qa(site_id, pages, style,
+                          new_brief.get("page_type") or row["page_type"] or "", progress)
     updated = await db.pool().fetchrow(
         "UPDATE projects SET pages = $1::jsonb, brief = $2::jsonb, style = $3, "
         " page_type = $4, updated_at = now() WHERE id = $5 RETURNING *",

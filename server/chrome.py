@@ -8,10 +8,12 @@ Everything here is BEST-EFFORT and degrades gracefully: any failure returns None
 never break generation or the request. Never trust HTTP 200 alone — we verify the payload
 actually decodes to bytes/an image before using it.
 """
+import asyncio
 import base64
+import json
 import logging
 import os
-from typing import Optional
+from typing import List, Optional
 
 import httpx
 
@@ -110,3 +112,116 @@ async def fetch_image_data_uri(keywords: str, w: int = 1200, h: int = 630,
     except Exception as e:  # noqa: BLE001
         logger.info("hero image fetch failed for '%s': %s", keywords, e)
         return None
+
+
+# ---- runtime QA: capture JS console errors --------------------------------
+# chrome-pool has NO console-log endpoint, so we inject a tiny error collector into a
+# COPY of the page (see harness.runtime_qa) that records every window `error` /
+# `unhandledrejection` / `console.error(...)` into `window.__errs`, then read that array
+# back via /eval after loading + exercising the UI.
+ERR_COLLECTOR = (
+    '<script>window.__errs=[];'
+    'addEventListener("error",function(e){window.__errs.push((e.message||"error")+" @"+'
+    '(e.filename||"").split("/").pop()+":"+(e.lineno||0));});'
+    'addEventListener("unhandledrejection",function(e){window.__errs.push('
+    '"unhandledrejection: "+((e.reason&&e.reason.message)||e.reason));});'
+    'var _e=console.error;console.error=function(){window.__errs.push('
+    '"console.error: "+Array.prototype.join.call(arguments," "));'
+    '_e.apply(console,arguments);};</script>'
+)
+
+# JS that exercises the page: click up to ~10 buttons (never <a>, which would navigate
+# away) and fire a few keyboard events, then report how many it touched. Wrapped in an
+# IIFE so /eval gets a single value.
+_EXERCISE_JS = (
+    "(function(){var n=0;try{"
+    "var b=document.querySelectorAll('button,[role=button]');"
+    "for(var i=0;i<b.length&&n<10;i++){try{b[i].click();n++;}catch(e){}}"
+    "var ks=['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' ','Enter'];"
+    "for(var j=0;j<ks.length;j++){try{"
+    "document.dispatchEvent(new KeyboardEvent('keydown',{key:ks[j],bubbles:true}));"
+    "document.dispatchEvent(new KeyboardEvent('keyup',{key:ks[j],bubbles:true}));"
+    "}catch(e){}}"
+    "}catch(e){}return n;})()"
+)
+
+
+def inject_collector(html: str) -> str:
+    """Return a COPY of `html` with the error collector inserted so it runs BEFORE the
+    page's own scripts (right after <head>, else prepended)."""
+    if not html:
+        return ERR_COLLECTOR
+    m = None
+    low = html.lower()
+    idx = low.find("<head>")
+    if idx != -1:
+        cut = idx + len("<head>")
+        return html[:cut] + ERR_COLLECTOR + html[cut:]
+    # no <head> — try after <head ...>
+    import re as _re
+    m = _re.search(r"<head[^>]*>", html, _re.IGNORECASE)
+    if m:
+        cut = m.end()
+        return html[:cut] + ERR_COLLECTOR + html[cut:]
+    return ERR_COLLECTOR + html
+
+
+async def console_errors(url: str, exercise: bool = True,
+                         timeout: Optional[float] = None) -> List[str]:
+    """Load `url` in a real headless browser, optionally exercise the UI, and return the
+    unique JS console errors it produced (from the injected `window.__errs`).
+
+    The page at `url` MUST already contain the ERR_COLLECTOR (inject it into a temp copy
+    first — see harness.runtime_qa). Best-effort: returns [] on any chrome-pool failure so
+    QA can never break a generation. Bounded by `timeout` (per-nav)."""
+    to = float(timeout if timeout is not None else _TIMEOUT)
+    sid = None
+    errs: List[str] = []
+    try:
+        async with httpx.AsyncClient(timeout=to, verify=False, auth=_auth()) as client:
+            r = await client.post(f"{CHROME_POOL_URL}/session")
+            r.raise_for_status()
+            j = r.json() or {}
+            sid = j.get("sessionId") or j.get("id")
+            if not sid:
+                logger.info("chrome-pool QA: no session id")
+                return []
+            await client.post(f"{CHROME_POOL_URL}/session/{sid}/navigate",
+                              json={"url": url, "acceptCookies": True})
+            await asyncio.sleep(1.5)   # let the page's scripts run / throw
+            if exercise:
+                try:
+                    await client.post(f"{CHROME_POOL_URL}/session/{sid}/eval",
+                                      json={"expression": _EXERCISE_JS})
+                except Exception as e:  # noqa: BLE001 — exercising is optional
+                    logger.info("chrome-pool QA exercise failed for %s: %s", url, e)
+                await asyncio.sleep(1.0)   # let click/key handlers throw
+            r = await client.post(f"{CHROME_POOL_URL}/session/{sid}/eval",
+                                  json={"expression": "JSON.stringify(window.__errs||[])"})
+            r.raise_for_status()
+            val = (r.json() or {}).get("value")
+            if isinstance(val, str) and val.strip():
+                try:
+                    parsed = json.loads(val)
+                    if isinstance(parsed, list):
+                        errs = [str(x) for x in parsed if x]
+                except Exception:
+                    pass
+    except Exception as e:  # noqa: BLE001
+        logger.info("chrome-pool console_errors failed for %s: %s", url, e)
+        return []
+    finally:
+        if sid:
+            try:
+                async with httpx.AsyncClient(timeout=15, verify=False, auth=_auth()) as c:
+                    await c.post(f"{CHROME_POOL_URL}/session/{sid}/close")
+            except Exception:
+                pass
+    # unique, order-preserving
+    seen = set()
+    uniq: List[str] = []
+    for e in errs:
+        if e not in seen:
+            seen.add(e)
+            uniq.append(e)
+    return uniq
