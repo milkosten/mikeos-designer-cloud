@@ -30,6 +30,24 @@ def _auth() -> tuple[str, str]:
     return (CHROME_POOL_USER, CHROME_POOL_PASS)
 
 
+async def _close(sid: str) -> None:
+    """Release a pool session. The verb is DELETE /session/{id} — `POST .../close` 404s.
+
+    Never raises into a caller, but never silent either: a bare `except: pass` around
+    the close is what hid the wrong verb (and an estate-wide session leak) for months.
+    """
+    if not sid:
+        return
+    try:
+        async with httpx.AsyncClient(timeout=15, verify=False, auth=_auth()) as c:
+            r = await c.delete(f"{CHROME_POOL_URL}/session/{sid}")
+        if r.status_code >= 300 and r.status_code != 404:  # 404 = already gone; fine
+            logger.info("chrome-pool: close of session %s returned HTTP %s",
+                        sid, r.status_code)
+    except Exception as e:  # noqa: BLE001 — never raise out of cleanup
+        logger.info("chrome-pool: close of session %s failed: %s", sid, e)
+
+
 def _downscale_jpeg(png_or_jpeg: bytes, width: int = 320) -> Optional[str]:
     """Downscale image bytes to a small JPEG data: URI. Falls back to the raw bytes as a
     data: URI (best-guess mime) if Pillow is unavailable."""
@@ -81,12 +99,7 @@ async def screenshot_data_uri(url: str, width: int = 320) -> Optional[str]:
         logger.info("thumbnail screenshot failed for %s: %s", url, e)
         return None
     finally:
-        if sid:
-            try:
-                async with httpx.AsyncClient(timeout=15, verify=False, auth=_auth()) as c:
-                    await c.delete(f"{CHROME_POOL_URL}/session/{sid}")  # NOT .../close — that 404s and leaks the session
-            except Exception:
-                pass
+        await _close(sid)
 
 
 async def fetch_image_data_uri(keywords: str, w: int = 1200, h: int = 630,
@@ -211,12 +224,7 @@ async def console_errors(url: str, exercise: bool = True,
         logger.info("chrome-pool console_errors failed for %s: %s", url, e)
         return []
     finally:
-        if sid:
-            try:
-                async with httpx.AsyncClient(timeout=15, verify=False, auth=_auth()) as c:
-                    await c.delete(f"{CHROME_POOL_URL}/session/{sid}")  # NOT .../close — that 404s and leaks the session
-            except Exception:
-                pass
+        await _close(sid)
     # unique, order-preserving
     seen = set()
     uniq: List[str] = []
