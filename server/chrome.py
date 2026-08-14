@@ -84,7 +84,7 @@ async def screenshot_data_uri(url: str, width: int = 320) -> Optional[str]:
         if sid:
             try:
                 async with httpx.AsyncClient(timeout=15, verify=False, auth=_auth()) as c:
-                    await c.post(f"{CHROME_POOL_URL}/session/{sid}/close")
+                    await c.delete(f"{CHROME_POOL_URL}/session/{sid}")  # NOT .../close — that 404s and leaks the session
             except Exception:
                 pass
 
@@ -214,7 +214,7 @@ async def console_errors(url: str, exercise: bool = True,
         if sid:
             try:
                 async with httpx.AsyncClient(timeout=15, verify=False, auth=_auth()) as c:
-                    await c.post(f"{CHROME_POOL_URL}/session/{sid}/close")
+                    await c.delete(f"{CHROME_POOL_URL}/session/{sid}")  # NOT .../close — that 404s and leaks the session
             except Exception:
                 pass
     # unique, order-preserving
