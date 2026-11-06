@@ -42,6 +42,27 @@ def backend() -> str:
     return f"openrouter:{LLM_MODEL}" if OPENROUTER_API_KEY else f"ollama:{TEXT_MODEL}"
 
 
+def _report_tokens(usage: Optional[Dict[str, Any]], model: Optional[str] = None) -> None:
+    """Best-effort: report this LLM call's tokens to telemetry-api (grafana.osmike.com).
+    Never raises — telemetry must never break generation. OpenRouter is OpenAI-compatible,
+    so usage carries prompt_tokens / completion_tokens."""
+    key = os.environ.get("SVC_TELEMETRY_KEY")
+    if not key or not usage:
+        return
+    try:
+        httpx.post(
+            "https://telemetry-api.osmike.com/v1/ingest",
+            headers={"X-API-KEY": key, "Content-Type": "application/json"},
+            json={"source_type": "service", "source_id": "designer", "box": "242",
+                  "model": model or LLM_MODEL,
+                  "usage": {"input_tokens": usage.get("prompt_tokens", 0),
+                            "output_tokens": usage.get("completion_tokens", 0)}},
+            timeout=5,
+        )
+    except Exception:  # noqa: BLE001
+        pass
+
+
 def _endpoint() -> tuple[str, Dict[str, str]]:
     """Parse OLLAMA_GPU_URL (ollama://user:pass@host:port) -> (base_url, headers)."""
     raw = OLLAMA_GPU_URL
@@ -98,6 +119,7 @@ async def _openrouter_chat(messages: List[Dict[str, Any]], schema: Optional[Dict
             data = resp.json()
             if data.get("error"):
                 raise RuntimeError(str(data["error"]))
+            _report_tokens(data.get("usage"))
             msg = ((data.get("choices") or [{}])[0] or {}).get("message") or {}
             content = msg.get("content") or ""
             if not content.strip():
@@ -194,6 +216,8 @@ async def _openrouter_stream(messages: List[Dict[str, Any]], temperature: float,
         "stream": True,
         "reasoning": {"enabled": False},
         "provider": {"sort": "throughput"},
+        # Ask OpenRouter to emit a final usage chunk so we can report tokens (best-effort).
+        "usage": {"include": True},
     }
     headers = {
         "Authorization": f"Bearer {OPENROUTER_API_KEY}",
@@ -201,6 +225,7 @@ async def _openrouter_stream(messages: List[Dict[str, Any]], temperature: float,
         "HTTP-Referer": "https://designer.osmike.com",
         "X-Title": "MikeOS Designer",
     }
+    _usage: Optional[Dict[str, Any]] = None
     async with httpx.AsyncClient(timeout=timeout) as client:
         async with client.stream("POST", OPENROUTER_URL, json=body, headers=headers) as resp:
             resp.raise_for_status()
@@ -216,10 +241,13 @@ async def _openrouter_stream(messages: List[Dict[str, Any]], temperature: float,
                     continue
                 if data.get("error"):
                     raise RuntimeError(str(data["error"]))
+                if data.get("usage"):  # OpenRouter sends a trailing usage-only chunk
+                    _usage = data["usage"]
                 delta = (((data.get("choices") or [{}])[0] or {}).get("delta") or {})
                 chunk = delta.get("content")
                 if chunk:
                     yield chunk
+    _report_tokens(_usage)  # best-effort, after the stream completes
 
 
 async def _ollama_stream(messages: List[Dict[str, Any]], temperature: float,
