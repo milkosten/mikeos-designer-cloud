@@ -116,3 +116,10 @@ proxied per house convention). No further DNS action needed.
   env). A page takes ~60–90s on the shared GPU.
 - **Storage:** project rows are tiny; the sites dir grows with generated HTML (each site
   is a handful of small self-contained files). Both live on `/data` (bulk, ~110 TB free).
+
+## Fleet token telemetry
+Set `SVC_TELEMETRY_KEY` in the host `.env` from the shared `svc-telemetry`
+credential in secretz. Compose forwards it to the app; never commit the value.
+OpenRouter and Ollama calls (including streams) queue best-effort usage reports
+with `source_id=designer`, `box=242`. Uploads have a four-second timeout and do
+not delay generation. Missing keys or upload failures do not fail requests.

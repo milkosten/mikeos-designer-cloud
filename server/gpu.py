@@ -42,24 +42,36 @@ def backend() -> str:
     return f"openrouter:{LLM_MODEL}" if OPENROUTER_API_KEY else f"ollama:{TEXT_MODEL}"
 
 
-def _report_tokens(usage: Optional[Dict[str, Any]], model: Optional[str] = None) -> None:
-    """Best-effort: report this LLM call's tokens to telemetry-api (grafana.osmike.com).
-    Never raises — telemetry must never break generation. OpenRouter is OpenAI-compatible,
-    so usage carries prompt_tokens / completion_tokens."""
-    key = os.environ.get("SVC_TELEMETRY_KEY")
-    if not key or not usage:
-        return
+# Keep background tasks alive until the best-effort upload finishes.
+_telemetry_tasks: set[asyncio.Task] = set()
+
+
+async def _send_tokens(usage: Dict[str, Any], model: str, key: str) -> None:
     try:
-        httpx.post(
-            "https://telemetry-api.osmike.com/v1/ingest",
-            headers={"X-API-KEY": key, "Content-Type": "application/json"},
-            json={"source_type": "service", "source_id": "designer", "box": "242",
-                  "model": model or LLM_MODEL,
-                  "usage": {"input_tokens": usage.get("prompt_tokens", 0),
-                            "output_tokens": usage.get("completion_tokens", 0)}},
-            timeout=5,
-        )
-    except Exception:  # noqa: BLE001
+        async with httpx.AsyncClient(timeout=4.0) as client:
+            await client.post(
+                "https://telemetry-api.osmike.com/v1/ingest",
+                headers={"X-API-KEY": key},
+                json={"source_type": "service", "source_id": "designer", "box": "242",
+                      "model": model, "usage": usage},
+            )
+    except Exception:
+        pass
+
+
+def _report_tokens(usage: Optional[Dict[str, Any]], model: Optional[str] = None) -> None:
+    """Queue token usage without delaying generation; telemetry failures are ignored."""
+    try:
+        key = os.environ.get("SVC_TELEMETRY_KEY")
+        if not key or not usage:
+            return
+        normalized = dict(usage)
+        normalized["input_tokens"] = usage.get("input_tokens", usage.get("prompt_tokens", 0))
+        normalized["output_tokens"] = usage.get("output_tokens", usage.get("completion_tokens", 0))
+        task = asyncio.create_task(_send_tokens(normalized, model or LLM_MODEL, key))
+        _telemetry_tasks.add(task)
+        task.add_done_callback(_telemetry_tasks.discard)
+    except Exception:
         pass
 
 
@@ -119,7 +131,7 @@ async def _openrouter_chat(messages: List[Dict[str, Any]], schema: Optional[Dict
             data = resp.json()
             if data.get("error"):
                 raise RuntimeError(str(data["error"]))
-            _report_tokens(data.get("usage"))
+            _report_tokens(data.get("usage"), data.get("model") or LLM_MODEL)
             msg = ((data.get("choices") or [{}])[0] or {}).get("message") or {}
             content = msg.get("content") or ""
             if not content.strip():
@@ -185,6 +197,9 @@ async def chat(
                     continue
                 resp.raise_for_status()
                 data = resp.json()
+                _report_tokens({"input_tokens": data.get("prompt_eval_count", 0),
+                                "output_tokens": data.get("eval_count", 0)},
+                               data.get("model") or body["model"])
                 content = (data.get("message") or {}).get("content", "")
                 if not content.strip():
                     last_err = RuntimeError("GPU returned empty content")
@@ -217,7 +232,7 @@ async def _openrouter_stream(messages: List[Dict[str, Any]], temperature: float,
         "reasoning": {"enabled": False},
         "provider": {"sort": "throughput"},
         # Ask OpenRouter to emit a final usage chunk so we can report tokens (best-effort).
-        "usage": {"include": True},
+        "stream_options": {"include_usage": True},
     }
     headers = {
         "Authorization": f"Bearer {OPENROUTER_API_KEY}",
@@ -226,6 +241,7 @@ async def _openrouter_stream(messages: List[Dict[str, Any]], temperature: float,
         "X-Title": "MikeOS Designer",
     }
     _usage: Optional[Dict[str, Any]] = None
+    usage_model = LLM_MODEL
     async with httpx.AsyncClient(timeout=timeout) as client:
         async with client.stream("POST", OPENROUTER_URL, json=body, headers=headers) as resp:
             resp.raise_for_status()
@@ -243,11 +259,12 @@ async def _openrouter_stream(messages: List[Dict[str, Any]], temperature: float,
                     raise RuntimeError(str(data["error"]))
                 if data.get("usage"):  # OpenRouter sends a trailing usage-only chunk
                     _usage = data["usage"]
+                    usage_model = data.get("model") or LLM_MODEL
                 delta = (((data.get("choices") or [{}])[0] or {}).get("delta") or {})
                 chunk = delta.get("content")
                 if chunk:
                     yield chunk
-    _report_tokens(_usage)  # best-effort, after the stream completes
+    _report_tokens(_usage, usage_model)  # best-effort, after the stream completes
 
 
 async def _ollama_stream(messages: List[Dict[str, Any]], temperature: float,
@@ -286,6 +303,9 @@ async def _ollama_stream(messages: List[Dict[str, Any]], temperature: float,
                     if chunk:
                         yield chunk
                     if data.get("done"):
+                        _report_tokens({"input_tokens": data.get("prompt_eval_count", 0),
+                                        "output_tokens": data.get("eval_count", 0)},
+                                       data.get("model") or TEXT_MODEL)
                         break
 
 
